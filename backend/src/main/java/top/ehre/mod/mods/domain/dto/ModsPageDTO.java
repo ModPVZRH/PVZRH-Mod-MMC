@@ -21,4 +21,8 @@ public class ModsPageDTO extends PageParam {
     private String authorId;
     @ApiModelProperty(value = "模组名称")
     private String modName;
+    @ApiModelProperty(value = "分类ID")
+    private String categoryId;
+    @ApiModelProperty(value = "标签ID")
+    private String tagId;
 }

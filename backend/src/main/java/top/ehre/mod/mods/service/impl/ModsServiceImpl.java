@@ -1,8 +1,16 @@
 package top.ehre.mod.mods.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import top.ehre.mod.category.domain.entity.CategoryEntity;
+import top.ehre.mod.category.service.CategoryService;
 import top.ehre.mod.mods.domain.entity.ModsEntity;
 import top.ehre.mod.mods.mapper.ModsMapper;
 import top.ehre.mod.mods.service.ModsService;
@@ -17,17 +25,21 @@ import top.ehre.mod.mods.domain.dto.ModsAddDTO;
 import top.ehre.mod.mods.domain.dto.ModsUpdateDTO;
 import top.ehre.mod.security.authentication.UserInfo;
 import top.ehre.mod.system.user.service.UserService;
+import top.ehre.mod.tag.domain.entity.TagEntity;
+import top.ehre.mod.tag.domain.vo.TagVO;
+import top.ehre.mod.tag.service.TagService;
+import top.ehre.mod.util.IPUtil;
 import top.ehre.mod.util.PageResult;
 import top.ehre.mod.util.PageUtil;
 import top.ehre.mod.exception.BusinessException;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.BeanUtils;
 import org.springframework.transaction.annotation.Transactional;
-// ---------------------- 联表导包 -------------------------
-// ---------------------------------------------------------
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  *  服务实现类
@@ -44,6 +56,18 @@ public class ModsServiceImpl extends ServiceImpl<ModsMapper, ModsEntity> impleme
     @Resource
     UserService userService;
 
+    @Resource
+    CategoryService categoryService;
+
+    @Resource
+    TagService tagService;
+
+    @Resource
+    RedisTemplate redisTemplate;
+
+    private static final long VIEW_INTERVAL_MINUTES = 30;
+    private static final long DOWNLOAD_INTERVAL_MINUTES = 10;
+
 
     @Override
     public PageResult<ModsVO> page(ModsPageDTO modsPageDTO) {
@@ -58,6 +82,7 @@ public class ModsServiceImpl extends ServiceImpl<ModsMapper, ModsEntity> impleme
         List<ModsVO> list = modsMapper.queryPage(page, modsPageDTO);
         for(ModsVO modsVO : list){
             modsVO.setOtherAuthors(modsMapper.getOtherAuthors(modsVO.getId()));
+            fillTags(modsVO);
         }
         PageResult<ModsVO> pageResult = PageUtil.convert2PageResult(page, list);
         return pageResult;
@@ -65,30 +90,21 @@ public class ModsServiceImpl extends ServiceImpl<ModsMapper, ModsEntity> impleme
 
     @Override
     public List<ModsVO> getList() {
-        // 根据字段is_visible 查询
+        return getListByCategory(null);
+    }
+
+    @Override
+    public List<ModsVO> getListByCategory(String categoryId) {
         QueryWrapper<ModsEntity> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("is_visible", true)
-                .orderByDesc("is_featured")
+        queryWrapper.eq("is_visible", true);
+        if (categoryId != null && !categoryId.isBlank()) {
+            validateCategoryId(categoryId);
+            queryWrapper.eq("category_id", categoryId);
+        }
+        queryWrapper.orderByDesc("is_featured")
                 .orderByDesc("updated_at");
-        List<ModsEntity> list = modsMapper.selectList( queryWrapper);
-        List<ModsVO> listVO = list.stream().map(mods -> {
-            ModsVO modsVO = new ModsVO();
-            BeanUtils.copyProperties(mods, modsVO);
-            List<String> authorIds = modsMapper.getOtherAuthors(mods.getId());
-            String otherAuthorsName = "";
-            if (authorIds != null && authorIds.size() > 0) {
-                otherAuthorsName = "、";
-                for (String authorId : authorIds) {
-                    if (!Objects.equals(authorId, mods.getAuthorId())){
-                        otherAuthorsName += userService.get(authorId).getNickname() + "、";
-                    }
-                }
-                otherAuthorsName = otherAuthorsName.substring(0, otherAuthorsName.length() - 1);
-            }
-            modsVO.setAuthorName(userService.get(mods.getAuthorId()).getNickname() + otherAuthorsName);
-            return modsVO;
-        }).toList();
-        return listVO;
+        List<ModsEntity> list = modsMapper.selectList(queryWrapper);
+        return list.stream().map(this::toPublicModsVO).toList();
     }
 
     @Override
@@ -101,10 +117,13 @@ public class ModsServiceImpl extends ServiceImpl<ModsMapper, ModsEntity> impleme
             modsAddDTO.setAuthorId(userInfo.getUser().getUserId());
         }
         BeanUtils.copyProperties(modsAddDTO, mods);
+        normalizeCategoryId(mods);
+        validateCategoryId(mods.getCategoryId());
         boolean saved = save(mods);
         if (!saved) {
             throw new BusinessException("添加失败");
         }
+        saveModTags(mods.getId(), modsAddDTO.getTagIds());
         return true;
     }
 
@@ -113,6 +132,7 @@ public class ModsServiceImpl extends ServiceImpl<ModsMapper, ModsEntity> impleme
     public boolean delete(String id) {
         ModsEntity exists = getById(id);
         if (exists == null) throw new BusinessException("不存在该对象");
+        modsMapper.deleteModTags(id);
         boolean removed = removeById(id);
         if (!removed) throw new BusinessException("删除失败");
         return true;
@@ -121,6 +141,9 @@ public class ModsServiceImpl extends ServiceImpl<ModsMapper, ModsEntity> impleme
     @Override
     @Transactional(rollbackFor = Throwable.class)
     public boolean batchDelete(List<String> ids) {
+        if (ids != null) {
+            ids.forEach(modsMapper::deleteModTags);
+        }
         boolean removed = removeBatchByIds(ids);
         if (!removed) throw new BusinessException("删除失败");
         return true;
@@ -148,10 +171,15 @@ public class ModsServiceImpl extends ServiceImpl<ModsMapper, ModsEntity> impleme
         }
         ModsEntity mods = new ModsEntity();
         BeanUtils.copyProperties(modsUpdateDTO, mods);
+        normalizeCategoryId(mods);
+        validateCategoryId(mods.getCategoryId());
         if (mods.getId() == null) throw new BusinessException("主键不能为空");
         else {
             ModsEntity exists = getById(mods.getId());
             if (exists == null) throw new BusinessException("不存在该对象");
+        }
+        if (modsUpdateDTO.getTagIds() != null) {
+            saveModTags(mods.getId(), modsUpdateDTO.getTagIds());
         }
         boolean updated = updateById(mods);
         if (!updated) {
@@ -172,6 +200,8 @@ public class ModsServiceImpl extends ServiceImpl<ModsMapper, ModsEntity> impleme
         if (authentication != null) {
             modsVO.setAuthorName(userService.get(mods.getAuthorId()).getNickname());
         }
+        fillCategoryName(modsVO);
+        fillTags(modsVO);
         return modsVO;
     }
 
@@ -183,7 +213,10 @@ public class ModsServiceImpl extends ServiceImpl<ModsMapper, ModsEntity> impleme
     @Override
     @Transactional(rollbackFor = Throwable.class)
     public ModsCountVO incrementDownloadCount(String id) {
-        requirePublishedMod(id);
+        ModsEntity mods = requirePublishedMod(id);
+        if (!tryAcquireCount("download", id, DOWNLOAD_INTERVAL_MINUTES)) {
+            return toCountVO(mods);
+        }
         int rows = modsMapper.incrementDownloadCount(id);
         if (rows == 0) {
             throw new BusinessException("更新失败");
@@ -194,7 +227,10 @@ public class ModsServiceImpl extends ServiceImpl<ModsMapper, ModsEntity> impleme
     @Override
     @Transactional(rollbackFor = Throwable.class)
     public ModsCountVO incrementViewCount(String id) {
-        requirePublishedMod(id);
+        ModsEntity mods = requirePublishedMod(id);
+        if (!tryAcquireCount("view", id, VIEW_INTERVAL_MINUTES)) {
+            return toCountVO(mods);
+        }
         int rows = modsMapper.incrementViewCount(id);
         if (rows == 0) {
             throw new BusinessException("更新失败");
@@ -213,10 +249,105 @@ public class ModsServiceImpl extends ServiceImpl<ModsMapper, ModsEntity> impleme
         return mods;
     }
 
+    /**
+     * 同一 IP 对同一模组在冷却时间内只计一次。
+     * 重复请求返回 false，不增加计数。
+     */
+    private boolean tryAcquireCount(String type, String modId, long minutes) {
+        String key = "mod:count:" + type + ":" + modId + ":" + currentIp();
+        Boolean first = redisTemplate.opsForValue().setIfAbsent(key, "1", minutes, TimeUnit.MINUTES);
+        return Boolean.TRUE.equals(first);
+    }
+
+    private String currentIp() {
+        RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
+        if (attributes instanceof ServletRequestAttributes servletAttributes) {
+            HttpServletRequest request = servletAttributes.getRequest();
+            String ip = IPUtil.getIP(request);
+            if (ip != null && !ip.isBlank() && !"未知".equals(ip)) {
+                return ip;
+            }
+        }
+        return "unknown";
+    }
+
     private ModsCountVO toCountVO(ModsEntity mods) {
         return new ModsCountVO()
                 .setId(mods.getId())
                 .setDownloadCount(mods.getDownloadCount())
                 .setViewCount(mods.getViewCount());
+    }
+
+    private ModsVO toPublicModsVO(ModsEntity mods) {
+        ModsVO modsVO = new ModsVO();
+        BeanUtils.copyProperties(mods, modsVO);
+        List<String> authorIds = modsMapper.getOtherAuthors(mods.getId());
+        String otherAuthorsName = "";
+        if (authorIds != null && authorIds.size() > 0) {
+            otherAuthorsName = "、";
+            for (String authorId : authorIds) {
+                if (!Objects.equals(authorId, mods.getAuthorId())) {
+                    otherAuthorsName += userService.get(authorId).getNickname() + "、";
+                }
+            }
+            otherAuthorsName = otherAuthorsName.substring(0, otherAuthorsName.length() - 1);
+        }
+        modsVO.setAuthorName(userService.get(mods.getAuthorId()).getNickname() + otherAuthorsName);
+        fillCategoryName(modsVO);
+        fillTags(modsVO);
+        return modsVO;
+    }
+
+    private void normalizeCategoryId(ModsEntity mods) {
+        if (mods.getCategoryId() != null && mods.getCategoryId().isBlank()) {
+            mods.setCategoryId(null);
+        }
+    }
+
+    private void validateCategoryId(String categoryId) {
+        if (categoryId == null || categoryId.isBlank()) {
+            return;
+        }
+        if (categoryService.getById(categoryId) == null) {
+            throw new BusinessException("分类不存在");
+        }
+    }
+
+    private void saveModTags(String modId, List<String> tagIds) {
+        modsMapper.deleteModTags(modId);
+        if (tagIds == null || tagIds.isEmpty()) {
+            return;
+        }
+        List<String> distinctIds = tagIds.stream()
+                .filter(id -> id != null && !id.isBlank())
+                .distinct()
+                .toList();
+        if (distinctIds.isEmpty()) {
+            return;
+        }
+        long exists = tagService.count(new LambdaQueryWrapper<TagEntity>().in(TagEntity::getId, distinctIds));
+        if (exists != distinctIds.size()) {
+            throw new BusinessException("存在无效的标签，只能从已有标签中选择");
+        }
+        distinctIds.forEach(tagId -> modsMapper.addModTag(modId, tagId));
+    }
+
+    private void fillTags(ModsVO modsVO) {
+        List<TagVO> tags = modsMapper.getTags(modsVO.getId());
+        if (tags == null) {
+            tags = new ArrayList<>();
+        }
+        modsVO.setTags(tags);
+        modsVO.setTagIds(tags.stream().map(TagVO::getId).toList());
+    }
+
+    private void fillCategoryName(ModsVO modsVO) {
+        if (modsVO.getCategoryName() != null || modsVO.getCategoryId() == null || modsVO.getCategoryId().isBlank()) {
+            return;
+        }
+        CategoryEntity category = categoryService.getById(modsVO.getCategoryId());
+        if (category != null) {
+            modsVO.setCategoryName(category.getName());
+        }
     }
 }

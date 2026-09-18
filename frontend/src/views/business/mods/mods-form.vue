@@ -64,6 +64,25 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
+            <el-form-item label="分类" prop="categoryId">
+              <el-select v-model="form.categoryId" clearable filterable placeholder="请选择分类" style="width: 100%">
+                <el-option v-for="item in categoryList" :key="item.id" :label="item.name" :value="item.id" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="标签" prop="tagIds">
+              <el-select v-model="form.tagIds" multiple filterable collapse-tags collapse-tags-tooltip placeholder="请从已有标签中选择" style="width: 100%">
+                <el-option v-for="item in tagList" :key="item.id" :label="item.name" :value="item.id">
+                  <div class="option-item">
+                    <span class="tag-color-dot" :style="{ background: item.color || '#409EFF' }"></span>
+                    <span>{{ item.name }}</span>
+                  </div>
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
             <el-form-item label="Mod版本" prop="version">
               <el-input v-model="form.version" placeholder="例如 1.0.0" />
             </el-form-item>
@@ -149,6 +168,8 @@ import { MdEditor } from 'md-editor-v3';
 import 'md-editor-v3/lib/style.css';
 import { modsApi } from '@/api/mods-api';
 import { userApi } from '@/api/user-api';
+import { categoryApi } from '@/api/category-api';
+import { tagApi } from '@/api/tag-api';
 import { fileApi } from '@/api/file-api.js';
 import { hasPerm } from "@/utils/permission.js";
 import UserAvatar from "@/components/user-avatar.vue";
@@ -164,11 +185,19 @@ const emits = defineEmits(['reloadList']);
 const visibleFlag = ref(false);
 const addFlag = ref(false);
 const userList = ref([]);
+const categoryList = ref([]);
+const tagList = ref([]);
 const drawerSize = computed(() => (window.innerWidth < 960 ? '96%' : '880px'));
 
 function show(rowData) {
   userApi.getList().then(res => {
     userList.value = res.data;
+  });
+  categoryApi.getList().then(res => {
+    categoryList.value = res.data || [];
+  });
+  tagApi.getList().then(res => {
+    tagList.value = res.data || [];
   });
   Object.assign(form, formDefault);
   if (rowData && !_.isEmpty(rowData)) {
@@ -176,6 +205,7 @@ function show(rowData) {
   }
   form.modDescription = form.modDescription || '';
   form.otherAuthors = form.otherAuthors || [];
+  form.tagIds = form.tagIds || [];
   form.isModpack = !!form.isModpack;
   visibleFlag.value = true;
   addFlag.value = rowData.id == null;
@@ -188,6 +218,7 @@ function onClose() {
   Object.keys(form).forEach(key => form[key] = null);
   form.modDescription = '';
   form.otherAuthors = [];
+  form.tagIds = [];
   visibleFlag.value = false;
 }
 
@@ -228,6 +259,8 @@ const formDefault = {
   version: undefined,
   fileSize: undefined,
   otherAuthors: [],
+  categoryId: undefined,
+  tagIds: [],
   showDirectUrl: undefined,
   downloadCount: undefined,
   viewCount: undefined,
@@ -307,6 +340,13 @@ defineExpose({
 .option-item {
   display: flex;
   align-items: center;
+}
+
+.tag-color-dot {
+  width: 10px;
+  height: 10px;
+  margin-right: 8px;
+  border-radius: 50%;
 }
 
 .mods-form {

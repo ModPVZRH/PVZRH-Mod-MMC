@@ -33,6 +33,8 @@ public interface ModsService extends IService<ModsEntity> {
 
     List<ModsVO> getList();
 
+    List<ModsVO> getListByCategory(String categoryId);
+
     ModsVO get(String id);
 
     int addOtherAuthor(String id, String authorId);

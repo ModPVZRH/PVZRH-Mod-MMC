@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -39,6 +39,10 @@ public class ModsEntity {
 
     @ApiModelProperty("Mod介绍")
     private String modDescription;
+
+    @ApiModelProperty("分类ID")
+    @TableField(updateStrategy = FieldStrategy.ALWAYS)
+    private String categoryId;
 
     @ApiModelProperty("模组图标")
     private String iconUrl;

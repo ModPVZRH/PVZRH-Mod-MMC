@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import top.ehre.mod.tag.domain.vo.TagVO;
 import java.util.List;
 
 
@@ -36,6 +37,18 @@ public class ModsVO {
 
     @ApiModelProperty("其他作者")
     private List<String> otherAuthors;
+
+    @ApiModelProperty("分类ID")
+    private String categoryId;
+
+    @ApiModelProperty("分类名称")
+    private String categoryName;
+
+    @ApiModelProperty("标签ID列表")
+    private List<String> tagIds;
+
+    @ApiModelProperty("标签列表")
+    private List<TagVO> tags;
 
     @ApiModelProperty("Mod介绍")
     private String modDescription;

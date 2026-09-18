@@ -22,4 +22,20 @@
             updated_at = updated_at
         WHERE id = #{id}
     </update>
+    <insert id="addModTag">
+        INSERT INTO mods_tag (mod_id, tag_id) VALUES (#{id}, #{tagId})
+    </insert>
+    <delete id="deleteModTags">
+        DELETE FROM mods_tag WHERE mod_id = #{id}
+    </delete>
+    <delete id="deleteModTagsByTagId">
+        DELETE FROM mods_tag WHERE tag_id = #{tagId}
+    </delete>
+    <select id="getTags" resultType="top.ehre.mod.tag.domain.vo.TagVO">
+        SELECT t.id, t.name, t.color, t.created_at, t.updated_at
+        FROM mod_tag t
+        INNER JOIN mods_tag mt ON t.id = mt.tag_id
+        WHERE mt.mod_id = #{id}
+        ORDER BY t.id
+    </select>
 </mapper>

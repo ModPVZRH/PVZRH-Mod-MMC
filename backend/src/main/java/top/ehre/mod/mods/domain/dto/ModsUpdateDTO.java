@@ -34,6 +34,12 @@ public class ModsUpdateDTO {
     @ApiModelProperty("共创作者ID")
     private List<String> otherAuthors;
 
+    @ApiModelProperty("分类ID")
+    private String categoryId;
+
+    @ApiModelProperty("标签ID列表")
+    private List<String> tagIds;
+
     @ApiModelProperty("Mod介绍")
     private String modDescription;
 

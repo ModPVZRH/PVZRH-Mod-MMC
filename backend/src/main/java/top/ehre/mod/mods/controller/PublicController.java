@@ -1,14 +1,14 @@
 package top.ehre.mod.mods.controller;
 
 import jakarta.annotation.Resource;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import top.ehre.mod.announcement.service.AnnouncementService;
-import top.ehre.mod.announcement.domain.vo.AnnouncementVO;
+import top.ehre.mod.category.service.CategoryService;
 import top.ehre.mod.clientVersion.service.ClientVersionService;
 import top.ehre.mod.mods.domain.dto.ModsPageDTO;
 import top.ehre.mod.mods.domain.vo.ModsVO;
 import top.ehre.mod.mods.service.ModsService;
+import top.ehre.mod.tag.service.TagService;
 import top.ehre.mod.util.PageResult;
 import top.ehre.mod.util.Result;
 
@@ -32,9 +32,20 @@ public class PublicController {
     @Resource
     private AnnouncementService announcementService;
 
+    @Resource
+    private CategoryService categoryService;
+
+    @Resource
+    private TagService tagService;
+
     @GetMapping("/mod")
-    public Result modList() {
-        return Result.success(modsService.getList());
+    public Result modList(@RequestParam(value = "categoryId", required = false) String categoryId) {
+        return Result.success(modsService.getListByCategory(categoryId));
+    }
+
+    @GetMapping("/mod/category/{categoryId}")
+    public Result modListByCategory(@PathVariable("categoryId") String categoryId) {
+        return Result.success(modsService.getListByCategory(categoryId));
     }
 
     @GetMapping("/mod/page")
@@ -67,5 +78,15 @@ public class PublicController {
     @GetMapping("/announcements")
     public Result getPublishedAnnouncements() {
         return Result.success(announcementService.getPublishedAnnouncements());
+    }
+
+    @GetMapping("/category")
+    public Result categoryList() {
+        return Result.success(categoryService.getList());
+    }
+
+    @GetMapping("/tag")
+    public Result tagList() {
+        return Result.success(tagService.getList());
     }
 }

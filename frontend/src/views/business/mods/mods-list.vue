@@ -56,6 +56,22 @@
               <el-input v-model="queryForm.modName" placeholder="Mod名称"/>
             </div>
           </div>
+          <div class="query-item">
+            <div class="query-placeholder">分类:</div>
+            <div class="query-input">
+              <el-select v-model="queryForm.categoryId" clearable placeholder="全部分类" style="width: 160px">
+                <el-option v-for="item in categoryList" :key="item.id" :label="item.name" :value="item.id" />
+              </el-select>
+            </div>
+          </div>
+          <div class="query-item">
+            <div class="query-placeholder">标签:</div>
+            <div class="query-input">
+              <el-select v-model="queryForm.tagId" clearable placeholder="全部标签" style="width: 160px">
+                <el-option v-for="item in tagList" :key="item.id" :label="item.name" :value="item.id" />
+              </el-select>
+            </div>
+          </div>
         </div>
         <div class="query-btn-group">
           <el-button type="primary" @click="onSearch">
@@ -117,6 +133,28 @@
             </template>
           </el-table-column>
           <el-table-column prop="modName" label="Mod名称" min-width="120" align="center" show-overflow-tooltip/>
+          <el-table-column prop="categoryName" label="分类" min-width="100" align="center">
+            <template #default="scope">
+              {{ scope.row.categoryName || '-' }}
+            </template>
+          </el-table-column>
+          <el-table-column label="标签" min-width="180" align="center">
+            <template #default="scope">
+              <div v-if="scope.row.tags && scope.row.tags.length" class="mod-tag-cell">
+                <el-tag
+                  v-for="tag in scope.row.tags"
+                  :key="tag.id"
+                  :color="tag.color"
+                  effect="dark"
+                  size="small"
+                  style="border: none"
+                >
+                  {{ tag.name }}
+                </el-tag>
+              </div>
+              <span v-else style="color: var(--el-text-color-placeholder)">-</span>
+            </template>
+          </el-table-column>
           <el-table-column prop="modDescription" label="Mod介绍" min-width="200" align="left">
             <template #default="scope">
               <el-tooltip
@@ -201,6 +239,8 @@
 <script setup>
 import { ref, reactive, onMounted, watch } from 'vue'
 import { modsApi } from '@/api/mods-api'
+import { categoryApi } from '@/api/category-api'
+import { tagApi } from '@/api/tag-api'
 import ModsForm from './mods-form.vue'
 import {Delete, Plus, Refresh, Search, ArrowUp, ArrowDown} from '@element-plus/icons-vue'
 import {hasPerm} from "@/utils/permission.js";
@@ -240,11 +280,16 @@ function getDescriptionTooltip(text) {
 const queryFormState = {
   pageNum: 1,
   pageSize: 10,
+  modName: undefined,
+  categoryId: undefined,
+  tagId: undefined,
   sortItemList: []
 }
 const queryForm = reactive({ ...queryFormState })
 const tableData = ref([])
 const total = ref(0)
+const categoryList = ref([])
+const tagList = ref([])
 
 // 重置查询条件
 function resetQuery() {
@@ -279,7 +324,15 @@ function handleSizeChange(newSize) {
 }
 
 
-onMounted(queryData)
+onMounted(() => {
+  categoryApi.getList().then(res => {
+    categoryList.value = res.data || []
+  }).catch(() => {})
+  tagApi.getList().then(res => {
+    tagList.value = res.data || []
+  }).catch(() => {})
+  queryData()
+})
 
 // 删除
 const selectedRowKeyList = ref([])
@@ -402,6 +455,13 @@ watch(selectedSortItems, (newSelectedSortItems, oldSelectedSortItems) => {
 // --------------------------------------------------------
 </script>
 <style scoped lang="scss">
+.mod-tag-cell {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+}
+
 .mod-desc-cell {
   display: -webkit-box;
   -webkit-line-clamp: 2;

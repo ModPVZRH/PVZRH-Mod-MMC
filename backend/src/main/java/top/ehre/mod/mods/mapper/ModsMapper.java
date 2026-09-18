@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 import top.ehre.mod.mods.domain.dto.ModsPageDTO;
 import top.ehre.mod.mods.domain.vo.ModsVO;
+import top.ehre.mod.tag.domain.vo.TagVO;
 import org.springframework.stereotype.Component;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
@@ -34,17 +35,32 @@ public interface ModsMapper extends BaseMapper<ModsEntity> {
 
     int incrementViewCount(@Param("id") String id);
 
+    int addModTag(@Param("id") String modId, @Param("tagId") String tagId);
+
+    int deleteModTags(@Param("id") String modId);
+
+    int deleteModTagsByTagId(@Param("tagId") String tagId);
+
+    List<TagVO> getTags(@Param("id") String modId);
+
     class ModsSqlProvider {
         public String queryPage(final Page page, final ModsPageDTO pageDTO) {
             return new SQL() {{
-                SELECT("id,mod_name,english_name,author_id,mod_description,icon_url,video_url,game_name,supported_versions,is_preposition,is_modpack,framework_name,show_direct_url,download_direct_url,download_cloud_url,version,file_size,download_count,view_count,is_approved,is_featured,is_visible,created_at,updated_at");
+                SELECT("mods.id,mods.mod_name,mods.english_name,mods.author_id,mods.mod_description,mods.icon_url,mods.video_url,mods.game_name,mods.supported_versions,mods.is_preposition,mods.is_modpack,mods.framework_name,mods.show_direct_url,mods.download_direct_url,mods.download_cloud_url,mods.version,mods.file_size,mods.download_count,mods.view_count,mods.is_approved,mods.is_featured,mods.is_visible,mods.created_at,mods.updated_at,mods.category_id,mod_category.name AS category_name");
                 FROM("mods");
+                LEFT_OUTER_JOIN("mod_category ON mods.category_id = mod_category.id");
                 if (pageDTO != null) {
                     if (pageDTO.getAuthorId() != null && !pageDTO.getAuthorId().isBlank()){
-                        WHERE("author_id = #{pageDTO.authorId}");
+                        WHERE("mods.author_id = #{pageDTO.authorId}");
                     }
                     if (pageDTO.getModName() != null && !pageDTO.getModName().isBlank()){
-                        WHERE("INSTR(mod_name, '" + pageDTO.getModName() + "')");
+                        WHERE("INSTR(mods.mod_name, #{pageDTO.modName})");
+                    }
+                    if (pageDTO.getCategoryId() != null && !pageDTO.getCategoryId().isBlank()){
+                        WHERE("mods.category_id = #{pageDTO.categoryId}");
+                    }
+                    if (pageDTO.getTagId() != null && !pageDTO.getTagId().isBlank()){
+                        WHERE("mods.id IN (SELECT mod_id FROM mods_tag WHERE tag_id = #{pageDTO.tagId})");
                     }
                 }
             }}.toString();
