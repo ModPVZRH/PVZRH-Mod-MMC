@@ -111,7 +111,7 @@
         <div class="form-section-title">{{ $t('mods.downloadSection') }}</div>
         <p class="version-tip">{{ $t('mods.versionTip') }}</p>
         <div class="version-toolbar">
-          <el-button type="primary" plain @click="addVersion">{{ $t('mods.addVersion') }}</el-button>
+          <el-button type="primary" plain @click="openVersionDialog">{{ $t('mods.addVersion') }}</el-button>
         </div>
         <div class="version-list">
           <div v-for="(item, index) in form.versions" :key="item.uid" class="version-card">
@@ -127,14 +127,17 @@
             <el-form-item :label="$t('mods.version')" :prop="'versions.' + index + '.version'" :rules="versionFieldRules">
               <el-input v-model="item.version" :placeholder="$t('mods.versionPlaceholder')" />
             </el-form-item>
-            <el-form-item :label="$t('mods.versionDescription')">
-              <el-input
+            <el-form-item :label="$t('mods.versionDescription')" class="version-description-item">
+              <MdEditor
+                :id="'version-editor-' + item.uid"
                 v-model="item.description"
-                type="textarea"
-                :rows="2"
-                maxlength="2000"
-                show-word-limit
+                :language="mdLang"
+                previewTheme="github"
                 :placeholder="$t('mods.versionDescriptionPlaceholder')"
+                :footers="[]"
+                :toolbarsExclude="['github']"
+                style="width: 100%; height: 280px"
+                @onUploadImg="onUploadImg"
               />
             </el-form-item>
             <el-form-item :label="$t('mods.directUrl')" :prop="'versions.' + index + '.downloadDirectUrl'" :rules="directUrlRules">
@@ -183,6 +186,47 @@
         </div>
       </template>
     </el-drawer>
+
+    <el-dialog
+      v-model="versionDialogVisible"
+      :title="$t('mods.addVersion')"
+      width="800px"
+      append-to-body
+      destroy-on-close
+      class="version-add-dialog"
+    >
+      <el-form ref="versionDialogRef" :model="versionDialog" label-width="108px">
+        <el-form-item :label="$t('mods.version')" prop="version" :rules="versionFieldRules">
+          <el-input v-model="versionDialog.version" :placeholder="$t('mods.versionPlaceholder')" />
+        </el-form-item>
+        <el-form-item :label="$t('mods.directUrl')" prop="downloadDirectUrl" :rules="directUrlRules">
+          <el-input v-model="versionDialog.downloadDirectUrl" :placeholder="$t('mods.directUrlFull')" />
+        </el-form-item>
+        <el-form-item :label="$t('mods.cloudUrl')" prop="downloadCloudUrl" :rules="cloudUrlRules">
+          <el-input v-model="versionDialog.downloadCloudUrl" :placeholder="$t('mods.cloudUrlFull')" />
+        </el-form-item>
+        <el-form-item :label="$t('mods.currentVersion')">
+          <el-switch v-model="versionDialog.current" />
+        </el-form-item>
+        <el-form-item :label="$t('mods.versionDescription')" class="version-description-item">
+          <MdEditor
+            id="version-editor-dialog"
+            v-model="versionDialog.description"
+            :language="mdLang"
+            previewTheme="github"
+            :placeholder="$t('mods.versionDescriptionPlaceholder')"
+            :footers="[]"
+            :toolbarsExclude="['github']"
+            style="width: 100%; height: 360px"
+            @onUploadImg="onUploadImg"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="versionDialogVisible = false">{{ $t('common.cancel') }}</el-button>
+        <el-button type="primary" @click="confirmVersionDialog">{{ $t('common.confirm') }}</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 <script setup>
@@ -282,6 +326,7 @@ function show(rowData) {
 }
 
 function onClose() {
+  versionDialogVisible.value = false;
   Object.keys(form).forEach(key => form[key] = null);
   form.modDescription = '';
   form.otherAuthors = [];
@@ -290,11 +335,55 @@ function onClose() {
   visibleFlag.value = false;
 }
 
-function addVersion() {
-  form.versions.forEach((item) => {
-    item.current = false;
+const versionDialogVisible = ref(false);
+const versionDialogRef = ref();
+const versionDialog = reactive({
+  version: '',
+  description: '',
+  downloadDirectUrl: '',
+  downloadCloudUrl: '',
+  current: true,
+});
+
+function openVersionDialog() {
+  versionDialog.version = '';
+  versionDialog.description = '';
+  versionDialog.downloadDirectUrl = '';
+  versionDialog.downloadCloudUrl = '';
+  versionDialog.current = true;
+  versionDialogVisible.value = true;
+  nextTick(() => {
+    versionDialogRef.value?.clearValidate();
   });
-  form.versions.unshift(blankVersion(true));
+}
+
+async function confirmVersionDialog() {
+  try {
+    await versionDialogRef.value.validate();
+  } catch (err) {
+    ElMessage.error(t('common.validateError'));
+    return;
+  }
+  const version = versionDialog.version.trim();
+  if (form.versions.some((item) => (item.version || '').trim() === version)) {
+    ElMessage.error(t('mods.duplicateVersion'));
+    return;
+  }
+  if (versionDialog.current) {
+    form.versions.forEach((item) => {
+      item.current = false;
+    });
+  }
+  const created = blankVersion(versionDialog.current);
+  created.version = version;
+  created.description = versionDialog.description || '';
+  created.downloadDirectUrl = versionDialog.downloadDirectUrl.trim();
+  created.downloadCloudUrl = versionDialog.downloadCloudUrl.trim();
+  form.versions.unshift(created);
+  if (!form.versions.some((item) => item.current)) {
+    created.current = true;
+  }
+  versionDialogVisible.value = false;
 }
 
 function setCurrentVersion(index) {
@@ -528,6 +617,12 @@ defineExpose({
   margin-bottom: 8px;
 }
 
+.version-description-item {
+  :deep(.el-form-item__content) {
+    line-height: normal;
+  }
+}
+
 .mod-description-item {
   margin-bottom: 22px;
 
@@ -552,6 +647,16 @@ defineExpose({
 
   .md-editor {
     border-radius: 6px;
+  }
+}
+
+.version-add-dialog {
+  .md-editor {
+    border-radius: 6px;
+  }
+
+  .el-dialog__body {
+    padding-top: 8px;
   }
 }
 </style>
