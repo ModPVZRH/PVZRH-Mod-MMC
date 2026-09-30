@@ -62,3 +62,16 @@ CREATE TABLE IF NOT EXISTS mods_tag (
     PRIMARY KEY (mod_id, tag_id),
     INDEX idx_tag_id (tag_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='模组标签关联';
+
+CREATE TABLE IF NOT EXISTS mod_version (
+    id INT PRIMARY KEY AUTO_INCREMENT COMMENT 'ID',
+    mod_id INT NOT NULL COMMENT '模组ID',
+    version VARCHAR(50) NOT NULL COMMENT '版本号',
+    description TEXT COMMENT '版本描述',
+    download_direct_url VARCHAR(500) COMMENT '直链下载地址',
+    download_cloud_url VARCHAR(500) COMMENT '网盘下载地址',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '修改时间',
+    UNIQUE KEY uk_mod_version (mod_id, version),
+    INDEX idx_mod_version_mod (mod_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='模组版本';

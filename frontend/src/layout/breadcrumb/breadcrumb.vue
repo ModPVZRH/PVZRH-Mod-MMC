@@ -1,13 +1,14 @@
 <template>
   <el-breadcrumb separator=">" class="breadcrumb">
-    <el-breadcrumb-item v-for="(item, index) in parentMenuList" :key="index">{{ item.menuName }}</el-breadcrumb-item>
-    <el-breadcrumb-item>{{ currentRoute.meta.title }}</el-breadcrumb-item>
+    <el-breadcrumb-item v-for="(item, index) in parentMenuList" :key="index">{{ translateMenuName(item.menuName) }}</el-breadcrumb-item>
+    <el-breadcrumb-item>{{ translateRouteTitle(currentRoute.meta.title) }}</el-breadcrumb-item>
   </el-breadcrumb>
 </template>
 <script setup>
 import {useRoute} from 'vue-router'
 import {computed} from 'vue'
 import {useMenuStore} from "@/stores/menu.js";
+import {translateMenuName, translateRouteTitle} from '@/i18n/menu.js'
 
 let currentRoute = useRoute()
 

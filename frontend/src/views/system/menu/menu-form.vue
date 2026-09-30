@@ -1,77 +1,79 @@
 <template>
   <div class="drawer-form">
     <el-drawer
-        :title="addFlag ? '添加' : '编辑'"
+        :title="addFlag ? $t('common.addTitle') : $t('common.editTitle')"
         :size="500"
         v-model="visibleFlag"
         :before-close="onClose"
     >
       <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
-        <el-form-item label="菜单名称" prop="menuName" >
-          <el-input v-model="form.menuName" placeholder="菜单名称"/>
+        <el-form-item :label="$t('menuManage.menuName')" prop="menuName" >
+          <el-input v-model="form.menuName" :placeholder="$t('menuManage.menuName')"/>
         </el-form-item>
-        <el-form-item label="父菜单ID" prop="parentId" >
-          <el-input v-model="form.parentId" placeholder="父菜单ID"/>
+        <el-form-item :label="$t('menuManage.parentId')" prop="parentId" >
+          <el-input v-model="form.parentId" :placeholder="$t('menuManage.parentId')"/>
         </el-form-item>
-        <el-form-item label="权限类型" prop="type" >
-          <el-select v-model="form.type" clearable placeholder="权限类型">
+        <el-form-item :label="$t('menuManage.type')" prop="type" >
+          <el-select v-model="form.type" clearable :placeholder="$t('menuManage.type')">
             <el-option v-for="(option, index) in typeOptions" :key="index" :label="option.label" :value="option.value"/>
           </el-select>
         </el-form-item>
-        <el-form-item label="权限字符串" prop="code" >
-          <el-input v-model="form.code" placeholder="权限字符串"/>
+        <el-form-item :label="$t('menuManage.code')" prop="code" >
+          <el-input v-model="form.code" :placeholder="$t('menuManage.code')"/>
         </el-form-item>
-        <el-form-item label="路由地址" prop="uri" >
-          <el-input v-model="form.uri" placeholder="路由地址"/>
+        <el-form-item :label="$t('menuManage.uri')" prop="uri" >
+          <el-input v-model="form.uri" :placeholder="$t('menuManage.uri')"/>
         </el-form-item>
-        <el-form-item label="组件路径" prop="componentPath" >
-          <el-input v-model="form.componentPath" placeholder="组件路径"/>
+        <el-form-item :label="$t('menuManage.componentPath')" prop="componentPath" >
+          <el-input v-model="form.componentPath" :placeholder="$t('menuManage.componentPath')"/>
         </el-form-item>
-        <el-form-item label="图标" prop="icon" >
+        <el-form-item :label="$t('menuManage.icon')" prop="icon" >
           <IconPicker v-model="form.icon"></IconPicker>
         </el-form-item>
-        <el-form-item label="排序优先级" prop="priority" >
-          <el-input-number v-model="form.priority" placeholder="排序优先级"/>
+        <el-form-item :label="$t('menuManage.priority')" prop="priority" >
+          <el-input-number v-model="form.priority" :placeholder="$t('menuManage.priority')"/>
         </el-form-item>
-        <el-form-item label="创建时间" prop="createTime"  v-if="false">
+        <el-form-item :label="$t('common.createTime')" prop="createTime"  v-if="false">
           <el-date-picker v-model="form.createTime" type="datetime"
-                          placeholder="创建时间"
+                          :placeholder="$t('common.createTime')"
                           format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss"/>
         </el-form-item>
-        <el-form-item label="更新时间" prop="updateTime"  v-if="false">
+        <el-form-item :label="$t('common.updateTime')" prop="updateTime"  v-if="false">
           <el-date-picker v-model="form.updateTime" type="datetime"
-                          placeholder="更新时间"
+                          :placeholder="$t('common.updateTime')"
                           format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss"/>
         </el-form-item>
-        <el-form-item label="创建用户" prop="createUser"  v-if="false">
-          <el-input v-model="form.createUser" placeholder="创建用户"/>
+        <el-form-item :label="$t('common.createUser')" prop="createUser"  v-if="false">
+          <el-input v-model="form.createUser" :placeholder="$t('common.createUser')"/>
         </el-form-item>
-        <el-form-item label="更新用户" prop="updateUser"  v-if="false">
-          <el-input v-model="form.updateUser" placeholder="更新用户"/>
+        <el-form-item :label="$t('common.updateUser')" prop="updateUser"  v-if="false">
+          <el-input v-model="form.updateUser" :placeholder="$t('common.updateUser')"/>
         </el-form-item>
       </el-form>
 
       <template #footer>
         <div class="drawer-footer">
-          <el-button @click="onClose">取消</el-button>
-          <el-button type="primary" @click="onSubmit">保存</el-button>
+          <el-button @click="onClose">{{ $t('common.cancel') }}</el-button>
+          <el-button type="primary" @click="onSubmit">{{ $t('common.save') }}</el-button>
         </div>
       </template>
     </el-drawer>
   </div>
 </template>
 <script setup>
-  import {reactive, ref, nextTick} from 'vue';
+  import {reactive, ref, nextTick, computed} from 'vue';
+  import {useI18n} from 'vue-i18n';
   import _ from 'lodash';
   import {ElMessage} from 'element-plus';
   import {menuApi} from '@/api/menu-api';
   import IconPicker from "@/components/icon-picker.vue";
+  const { t } = useI18n()
   // ------------------------ 枚举量 ------------------------
-  const typeOptions = [
-    { label: '目录', value: 1 },
-    { label: '菜单', value: 2 },
-    { label: '功能点', value: 3 },
-  ]
+  const typeOptions = computed(() => [
+    { label: t('menuManage.directory'), value: 1 },
+    { label: t('menuManage.menu'), value: 2 },
+    { label: t('menuManage.point'), value: 3 },
+  ])
 
   // ------------------------ 事件 ------------------------
 
@@ -123,13 +125,13 @@
 
   let form = reactive({...formDefault});
 
-  const rules = {
+  const rules = computed(() => ({
     menuName: [{
       required: true,
-      message: '菜单名称 必填',
+      message: t('common.required', { field: t('menuManage.menuName') }),
       trigger: 'blur'
     }],
-  };
+  }));
 
   // 点击确定，验证表单
   async function onSubmit() {
@@ -137,7 +139,7 @@
       await formRef.value.validate();
       save();
     } catch (err) {
-      ElMessage.error('参数验证错误，请仔细填写表单数据!');
+      ElMessage.error(t('common.validateError'));
     }
   }
 
@@ -149,7 +151,7 @@
       } else {
         await menuApi.update(form);
       }
-      ElMessage.success('操作成功');
+      ElMessage.success(t('common.success'));
       emits('reloadList');
       onClose();
     } catch (err) {

@@ -1,5 +1,8 @@
 <template>
   <div class="login-container">
+    <div class="login-lang">
+      <LanguageSwitcher light />
+    </div>
     <div class="waves">
       <div class="wave wave1"></div>
       <div class="wave wave2"></div>
@@ -11,40 +14,42 @@
       <div class="brand">
         <img src="/logo.png" alt="logo" class="brand-logo" />
         <div>
-          <h1 class="title">模组管理系统</h1>
-          <p class="subtitle">登录后继续管理模组、公告与版本</p>
+          <h1 class="title">{{ $t('login.title') }}</h1>
+          <p class="subtitle">{{ $t('login.subtitle') }}</p>
         </div>
       </div>
 
       <el-form :model="form" :rules="rules" ref="formRef" class="login-form">
         <el-form-item prop="username">
-          <el-input v-model="form.username" type="text" placeholder="用户名" :prefix-icon="User" />
+          <el-input v-model="form.username" type="text" :placeholder="$t('login.username')" :prefix-icon="User" />
         </el-form-item>
 
         <el-form-item prop="password">
-          <el-input v-model="form.password" type="password" placeholder="密码" :prefix-icon="Lock" />
+          <el-input v-model="form.password" type="password" :placeholder="$t('login.password')" :prefix-icon="Lock" />
         </el-form-item>
 
         <el-form-item prop="captchaCode">
           <div class="captcha-row">
-            <el-input v-model="form.captchaCode" type="text" placeholder="验证码" :prefix-icon="EditPen" />
-            <img :src="captchaBase64Image" @click="refreshCaptcha" alt="验证码" class="captcha-img" />
+            <el-input v-model="form.captchaCode" type="text" :placeholder="$t('login.captcha')" :prefix-icon="EditPen" />
+            <img :src="captchaBase64Image" @click="refreshCaptcha" :alt="$t('login.captcha')" class="captcha-img" />
           </div>
         </el-form-item>
       </el-form>
 
       <div class="action-buttons">
         <el-button @click="onLogin" type="primary" class="login-btn">
-          登录
+          {{ $t('login.submit') }}
         </el-button>
 
-        <div class="divider">
-          <span>没有账号?</span>
-        </div>
+        <template v-if="registerEnabled">
+          <div class="divider">
+            <span>{{ $t('login.noAccount') }}</span>
+          </div>
 
-        <el-button type="info" @click="router.push('/register')" class="register-btn">
-          注册账号
-        </el-button>
+          <el-button type="info" @click="router.push('/register')" class="register-btn">
+            {{ $t('login.register') }}
+          </el-button>
+        </template>
       </div>
     </div>
   </div>
@@ -52,12 +57,25 @@
 
 <script setup>
 import { User, Lock, EditPen } from '@element-plus/icons-vue'
-import { reactive, ref, onMounted } from 'vue'
+import { reactive, ref, onMounted, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import LanguageSwitcher from '@/components/language-switcher.vue'
+
+const { t } = useI18n()
 
 onMounted(() => {
-  // 在组件挂载到 DOM 后执行的代码
   refreshCaptcha()
+  loadRegisterSetting()
 })
+
+async function loadRegisterSetting() {
+  try {
+    const res = await systemSettingApi.getPublic()
+    registerEnabled.value = res?.data?.registerEnabled !== false
+  } catch (e) {
+    registerEnabled.value = true
+  }
+}
 const form = reactive({
   username: '',
   password: '',
@@ -65,35 +83,37 @@ const form = reactive({
   captchaOwner: ''
 })
 
-const rules = {
+const rules = computed(() => ({
   username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' },
-    { min: 3, max: 20, message: '用户名长度在 3 到 20 个字符', trigger: 'blur' },
+    { required: true, message: t('login.usernameRequired'), trigger: 'blur' },
+    { min: 3, max: 20, message: t('login.usernameLength'), trigger: 'blur' },
     {
       pattern: /^[a-zA-Z0-9_]+$/,
-      message: '用户名只能包含英文字母、数字和下划线',
+      message: t('login.usernamePattern'),
       trigger: 'blur'
     }
   ],
   password: [
-    { required: true, message: '请输入密码', trigger: ['blur', 'change'] },
-    { min: 6, max: 20, message: '密码长度在 6 到 20 个字符', trigger: 'blur' },
+    { required: true, message: t('login.passwordRequired'), trigger: ['blur', 'change'] },
+    { min: 6, max: 20, message: t('login.passwordLength'), trigger: 'blur' },
     {
       pattern: /^[a-zA-Z0-9_.]+$/,
-      message: '密码只能包含英文字母、数字和下划线',
+      message: t('login.passwordPattern'),
       trigger: 'blur'
     }
   ],
   captchaCode: [
-    { required: true, message: '请输入验证码', trigger: ['blur', 'change'] }
+    { required: true, message: t('login.captchaRequired'), trigger: ['blur', 'change'] }
   ]
-}
+}))
 
 const formRef = ref()
 import { loginApi } from '@/api/login-api'
+import { systemSettingApi } from '@/api/system-setting-api'
 import { ElMessage } from 'element-plus'
 
 const captchaBase64Image = ref('')
+const registerEnabled = ref(false)
 
 async function refreshCaptcha() {
   try {
@@ -158,6 +178,13 @@ async function onLogin() {
     linear-gradient(135deg, #0f172a 0%, #1d4ed8 52%, #0ea5e9 100%);
   position: relative;
   overflow: hidden;
+}
+
+.login-lang {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  z-index: 10;
 }
 
 .waves {

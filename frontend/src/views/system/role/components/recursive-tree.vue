@@ -6,14 +6,14 @@
             @change="selectCheckbox(module)"
             size="default"
             :value="module.menuId"
-            :label="module.menuName"
+            :label="translateMenuName(module.menuName, module.uri)"
         />
       </div>
       <div v-if="module.children && module.children.some((e) => e.type === 3)">
         <div class="point">
           <div class="each-point" v-for="point in module.children" :key="point.menuId">
             <el-checkbox @change="selectCheckbox(point)" :value="point.menuId">
-              {{ point.menuName }}
+              {{ translateMenuName(point.menuName) }}
             </el-checkbox>
           </div>
         </div>
@@ -29,6 +29,7 @@
 <script setup>
 import {ref, watch} from 'vue';
 import {useMenuSettingStore} from "@/stores/menu-setting.js";
+import {translateMenuName} from '@/i18n/menu.js';
 
 const props = defineProps({
   tree: {

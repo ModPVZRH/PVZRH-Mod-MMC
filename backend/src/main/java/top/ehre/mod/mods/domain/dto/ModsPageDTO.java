@@ -25,4 +25,9 @@ public class ModsPageDTO extends PageParam {
     private String categoryId;
     @ApiModelProperty(value = "标签ID")
     private String tagId;
+    /**
+     * 服务端数据范围：仅返回该用户作为作者或共创的模组。由后端写入，忽略前端传值。
+     */
+    @ApiModelProperty(hidden = true)
+    private String scopeUserId;
 }

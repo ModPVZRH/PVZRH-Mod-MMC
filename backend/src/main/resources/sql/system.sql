@@ -95,6 +95,18 @@ VALUES (1, '管理员');
 INSERT INTO `t_user_role` (`user_id`, `role_id`)
 VALUES (1, 1);
 
+-- 系统设置：是否允许自行注册。已有库重复执行不会覆盖已保存的开关。
+CREATE TABLE IF NOT EXISTS system_setting (
+    id INT NOT NULL COMMENT '固定为 1',
+    register_enabled TINYINT(1) NOT NULL DEFAULT 1 COMMENT '是否开启注册',
+    update_time TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统设置';
+
+INSERT INTO system_setting (id, register_enabled)
+SELECT 1, 1 FROM DUAL
+WHERE NOT EXISTS (SELECT 1 FROM system_setting WHERE id = 1);
+
 
 INSERT INTO `t_menu` (`menu_id`, `menu_name`, `parent_id`, `type`, `uri`, `component_path`, `icon`, `priority`)
 VALUES (1, '系统管理', 0, 1, '/system', NULL, 'Location', 1),

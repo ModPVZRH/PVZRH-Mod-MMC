@@ -2,44 +2,44 @@
   <div class="drawer-form">
     <el-drawer
       class="client-version-form-drawer"
-      :title="addFlag ? '添加版本' : '编辑版本'"
+      :title="addFlag ? $t('clientVersion.add') : $t('clientVersion.edit')"
       :size="drawerSize"
       v-model="visibleFlag"
       :before-close="onClose"
       destroy-on-close
     >
       <el-form ref="formRef" :model="form" :rules="rules" label-width="108px" class="client-version-form">
-        <div class="form-section-title">基本信息</div>
+        <div class="form-section-title">{{ $t('common.basicInfo') }}</div>
         <el-row :gutter="16">
           <el-col :span="12">
-            <el-form-item label="版本号" prop="versionNumber">
-              <el-input v-model="form.versionNumber" placeholder="请输入版本号，例如 1.0.0" />
+            <el-form-item :label="$t('clientVersion.versionNumber')" prop="versionNumber">
+              <el-input v-model="form.versionNumber" :placeholder="$t('clientVersion.versionPlaceholder')" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="是否发布" prop="isReleased">
+            <el-form-item :label="$t('clientVersion.isReleased')" prop="isReleased">
               <el-switch v-model="form.isReleased" :active-value="true" />
             </el-form-item>
           </el-col>
           <el-col :span="24">
-            <el-form-item label="版本描述" prop="versionDescription">
-              <el-input v-model="form.versionDescription" placeholder="请输入版本描述" />
+            <el-form-item :label="$t('clientVersion.versionDescription')" prop="versionDescription">
+              <el-input v-model="form.versionDescription" :placeholder="$t('clientVersion.descriptionPlaceholder')" />
             </el-form-item>
           </el-col>
           <el-col :span="24">
-            <el-form-item label="下载地址" prop="downloadUrl">
-              <el-input v-model="form.downloadUrl" placeholder="请输入版本下载地址" />
+            <el-form-item :label="$t('clientVersion.downloadUrl')" prop="downloadUrl">
+              <el-input v-model="form.downloadUrl" :placeholder="$t('clientVersion.downloadPlaceholder')" />
             </el-form-item>
           </el-col>
         </el-row>
 
-        <div class="form-section-title">更新内容</div>
+        <div class="form-section-title">{{ $t('clientVersion.updateContentSection') }}</div>
         <el-form-item prop="updateContent" class="markdown-editor-item" label-width="0">
           <MdEditor
             v-model="form.updateContent"
-            language="zh-CN"
+            :language="mdLang"
             previewTheme="github"
-            placeholder="请输入版本更新内容，支持 Markdown 语法"
+            :placeholder="$t('clientVersion.contentPlaceholder')"
             :footers="[]"
             :toolbarsExclude="['github']"
             style="width: 100%; height: 400px"
@@ -50,8 +50,8 @@
 
       <template #footer>
         <div class="drawer-footer">
-          <el-button @click="onClose">取消</el-button>
-          <el-button type="primary" @click="onSubmit">保存</el-button>
+          <el-button @click="onClose">{{ $t('common.cancel') }}</el-button>
+          <el-button type="primary" @click="onSubmit">{{ $t('common.save') }}</el-button>
         </div>
       </template>
     </el-drawer>
@@ -59,12 +59,16 @@
 </template>
 <script setup>
 import { reactive, ref, nextTick, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import _ from 'lodash';
 import { ElMessage } from 'element-plus';
 import { MdEditor } from 'md-editor-v3';
 import 'md-editor-v3/lib/style.css';
 import { clientVersionApi } from '@/api/client-version-api';
 import { fileApi } from '@/api/file-api.js';
+
+const { t, locale } = useI18n();
+const mdLang = computed(() => locale.value === 'en' ? 'en-US' : 'zh-CN');
 
 const emits = defineEmits(['reloadList']);
 
@@ -104,7 +108,7 @@ async function onUploadImg(files, callback) {
     }
     callback(urls);
   } catch (err) {
-    ElMessage.error('图片上传失败');
+    ElMessage.error(t('mods.imageUploadFailed'));
     callback([]);
   }
 }
@@ -124,20 +128,20 @@ const formDefault = {
 
 let form = reactive({ ...formDefault });
 
-const rules = {
+const rules = computed(() => ({
   versionNumber: [{
     required: true,
-    message: '版本号 必填',
+    message: t('common.required', { field: t('clientVersion.versionNumber') }),
     trigger: 'blur'
   }],
-};
+}));
 
 async function onSubmit() {
   try {
     await formRef.value.validate();
     save();
   } catch (err) {
-    ElMessage.error('参数验证错误，请仔细填写表单数据!');
+    ElMessage.error(t('common.validateError'));
   }
 }
 
@@ -148,7 +152,7 @@ async function save() {
     } else {
       await clientVersionApi.update(form);
     }
-    ElMessage.success('操作成功');
+    ElMessage.success(t('common.success'));
     emits('reloadList');
     onClose();
   } catch (err) {

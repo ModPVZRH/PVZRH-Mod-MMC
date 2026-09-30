@@ -1,3 +1,5 @@
+import { tGlobal } from '@/i18n/index.js'
+
 const MAX_ICON_BYTES = 100 * 1024
 
 function blobToImage(blob) {
@@ -10,7 +12,7 @@ function blobToImage(blob) {
     }
     img.onerror = () => {
       URL.revokeObjectURL(url)
-      reject(new Error('图片读取失败'))
+      reject(new Error(tGlobal('iconUpload.readFailed')))
     }
     img.src = url
   })
@@ -20,7 +22,7 @@ function canvasToBlob(canvas, mimeType, quality) {
   return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => {
       if (!blob) {
-        reject(new Error('图片压缩失败'))
+        reject(new Error(tGlobal('iconUpload.compressFailed')))
         return
       }
       resolve(blob)
@@ -62,7 +64,7 @@ export async function compressImageToMaxSize(blob, maxBytes = MAX_ICON_BYTES, op
     result = await canvasToBlob(drawImage(img, width, height), mimeType, quality)
   }
   if (result.size > maxBytes) {
-    throw new Error('图片无法压缩到 100KB 以下，请更换更小的图片')
+    throw new Error(tGlobal('iconUpload.cannotCompress'))
   }
   return result
 }
@@ -70,7 +72,7 @@ export async function compressImageToMaxSize(blob, maxBytes = MAX_ICON_BYTES, op
 export async function urlToObjectUrl(url) {
   const response = await fetch(url, { mode: 'cors' })
   if (!response.ok) {
-    throw new Error('读取图片失败')
+    throw new Error(tGlobal('iconUpload.fetchFailed'))
   }
   const blob = await response.blob()
   return URL.createObjectURL(blob)

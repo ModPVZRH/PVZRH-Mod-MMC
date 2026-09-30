@@ -5,6 +5,7 @@
         <Setting/>
       </el-icon>
     </div>
+    <LanguageSwitcher/>
     <div class="user-space-item">
       <HeaderAvatar></HeaderAvatar>
     </div>
@@ -17,6 +18,7 @@
 import {ref} from 'vue'
 import HeaderSetting from "@/layout/header-user/header-setting.vue";
 import HeaderAvatar from "@/layout/header-user/header-avatar.vue";
+import LanguageSwitcher from '@/components/language-switcher.vue'
 
 // 设置
 const doShow = ref(null)

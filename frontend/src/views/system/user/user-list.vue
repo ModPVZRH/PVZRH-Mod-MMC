@@ -1,11 +1,22 @@
 <template>
   <div class="table-list" v-if="hasPerm('system:user:get')">
+    <div class="register-setting" v-if="hasPerm('system:user:upd')">
+      <el-card>
+        <div class="register-setting-row">
+          <div>
+            <div class="register-setting-title">{{ $t('user.registerEnabled') }}</div>
+            <div class="register-setting-tip">{{ $t('user.registerEnabledTip') }}</div>
+          </div>
+          <el-switch v-model="registerEnabled" :loading="registerSettingLoading" @change="onRegisterEnabledChange" />
+        </div>
+      </el-card>
+    </div>
     <div class="query">
       <el-card>
         <div class="query-operation">
           <div class="sort-query">
             <div class="query-item">
-              <div class="query-placeholder">排序字段:</div>
+              <div class="query-placeholder">{{ $t('common.sortField') }}:</div>
               <div class="query-input">
                 <el-select
                     v-model="selectedSortItems"
@@ -13,7 +24,7 @@
                     collapse-tags
                     collapse-tags-tooltip
                     :max-collapse-tags="4"
-                    placeholder="排序字段"
+                    :placeholder="$t('common.sortField')"
                     value-key="column"
                     @change="sortItemChange"
                     style="min-width: 260px; max-width: 600px;"
@@ -51,15 +62,15 @@
           </div>
           <div class="search-query">
             <div class="query-item">
-              <div class="query-placeholder">用户名:</div>
+              <div class="query-placeholder">{{ $t('user.username') }}:</div>
               <div class="query-input">
-                <el-input v-model="queryForm.username" placeholder="用户名"/>
+                <el-input v-model="queryForm.username" :placeholder="$t('user.username')"/>
               </div>
             </div>
             <div class="query-item">
-              <div class="query-placeholder">昵称:</div>
+              <div class="query-placeholder">{{ $t('user.nickname') }}:</div>
               <div class="query-input">
-                <el-input v-model="queryForm.nickname" placeholder="昵称"/>
+                <el-input v-model="queryForm.nickname" :placeholder="$t('user.nickname')"/>
               </div>
             </div>
           </div>
@@ -68,13 +79,13 @@
               <el-icon>
                 <search/>
               </el-icon>
-              查询
+              {{ $t('common.query') }}
             </el-button>
             <el-button @click="resetQuery">
               <el-icon>
                 <refresh/>
               </el-icon>
-              重置
+              {{ $t('common.reset') }}
             </el-button>
           </div>
         </div>
@@ -88,14 +99,14 @@
             <el-icon>
               <plus />
             </el-icon>
-            新增
+            {{ $t('common.add') }}
           </el-button>
           <el-button @click="confirmBatchDelete" type="danger" plain
                      :disabled="selectedRowKeyList.length === 0" v-if="hasPerm('system:user:del')">
             <el-icon>
               <Delete />
             </el-icon>
-            批量删除
+            {{ $t('common.batchDelete') }}
           </el-button>
         </div>
 
@@ -108,10 +119,10 @@
               style="width: 100%"
           >
             <el-table-column type="selection" width="42" />
-            <el-table-column prop="userId" label="用户ID" min-width="120" />
-            <el-table-column prop="username" label="用户名" min-width="120" />
-            <el-table-column prop="nickname" label="昵称" min-width="120" />
-            <el-table-column prop="avatar" label="头像" min-width="120">
+            <el-table-column prop="userId" :label="$t('user.userId')" min-width="120" />
+            <el-table-column prop="username" :label="$t('user.username')" min-width="120" />
+            <el-table-column prop="nickname" :label="$t('user.nickname')" min-width="120" />
+            <el-table-column prop="avatar" :label="$t('user.avatar')" min-width="120">
               <template #default="scope">
                 <el-image
                     style="width: 95px; height: 95px"
@@ -133,12 +144,12 @@
                 </el-image>
               </template>
             </el-table-column>
-            <el-table-column label="角色列表" min-width="120">
+            <el-table-column :label="$t('user.roleList')" min-width="120">
               <template #default="scope">
-                <el-button type="primary" text @click="scope.row.roleVOFlag = true">查看</el-button>
+                <el-button type="primary" text @click="scope.row.roleVOFlag = true">{{ $t('common.view') }}</el-button>
                 <el-dialog
                     v-model="scope.row.roleVOFlag"
-                    title="角色列表"
+                    :title="$t('user.roleList')"
                     width="60%"
                     align-center
                     :z-index="999"
@@ -148,22 +159,22 @@
                 </el-dialog>
               </template>
             </el-table-column>
-            <el-table-column prop="gender" label="性别" min-width="120">
+            <el-table-column prop="gender" :label="$t('user.gender')" min-width="120">
               <template #default="scope">
                 {{ getGenderOptionsLabel(scope.row.gender) }}
               </template>
             </el-table-column>
-            <el-table-column prop="createTime" label="创建时间" min-width="120" />
-            <el-table-column prop="updateTime" label="更新时间" min-width="120" />
-            <el-table-column prop="createUser" label="创建用户" min-width="120" />
-            <el-table-column prop="updateUser" label="更新用户" min-width="120" />
-            <el-table-column fixed="right" label="操作" width="120">
+            <el-table-column prop="createTime" :label="$t('common.createTime')" min-width="120" />
+            <el-table-column prop="updateTime" :label="$t('common.updateTime')" min-width="120" />
+            <el-table-column prop="createUser" :label="$t('common.createUser')" min-width="120" />
+            <el-table-column prop="updateUser" :label="$t('common.updateUser')" min-width="120" />
+            <el-table-column fixed="right" :label="$t('common.operation')" width="120">
               <template #default="scope">
                 <el-button link type="primary" @click="showForm(scope.row)" v-if="hasPerm('system:user:upd')">
-                  编辑
+                  {{ $t('common.edit') }}
                 </el-button>
                 <el-button link type="danger" @click="onDelete(scope.row)" v-if="hasPerm('system:user:del')">
-                  删除
+                  {{ $t('common.delete') }}
                 </el-button>
               </template>
             </el-table-column>
@@ -190,8 +201,11 @@
 </template>
 
 <script setup>
-  import { ref, reactive, onMounted, watch } from 'vue'
+  import { ref, reactive, onMounted, nextTick, watch, computed } from 'vue'
+  import { useI18n } from 'vue-i18n'
   import { userApi } from '@/api/user-api'
+  import { systemSettingApi } from '@/api/system-setting-api'
+  import { ElMessage } from 'element-plus'
   import UserForm from './user-form.vue'
   import {Delete, Plus, Refresh, Search, ArrowUp, ArrowDown} from '@element-plus/icons-vue'
   import {hasPerm} from "@/utils/permission.js";
@@ -199,13 +213,14 @@
   // ------------------------ 导入列表 ------------------------
   import RoleVoList from "./role-vo-list.vue";
   // --------------------------------------------------------
+  const { t } = useI18n()
   // ------------------------ 枚举量 ------------------------
-  const genderOptions = [
-    { label: '男', value: 1 },
-    { label: '女', value: 2 },
-  ]
+  const genderOptions = computed(() => [
+    { label: t('gender.male'), value: 1 },
+    { label: t('gender.female'), value: 2 },
+  ])
   function getGenderOptionsLabel(value) {
-    const option = genderOptions.find(option => option.value === value)
+    const option = genderOptions.value.find(option => option.value === value)
     return option ? option.label : ''
   }
 
@@ -223,6 +238,49 @@
   const queryForm = reactive({...queryFormState})
   const tableData = ref([])
   const total = ref(0)
+  const registerEnabled = ref(true)
+  const registerSettingReady = ref(false)
+  const registerSettingLoading = ref(false)
+
+  async function loadRegisterSetting() {
+    registerSettingReady.value = false
+    try {
+      const res = await systemSettingApi.getPublic()
+      registerEnabled.value = res?.data?.registerEnabled !== false
+    } catch (e) {
+      console.log(e)
+    }
+    await nextTick()
+    registerSettingReady.value = true
+  }
+
+  async function onRegisterEnabledChange(value) {
+    if (!registerSettingReady.value) {
+      return
+    }
+    registerSettingLoading.value = true
+    try {
+      const res = await systemSettingApi.update({ registerEnabled: value })
+      if (res.code !== 0) {
+        await revertRegisterEnabled(value)
+        ElMessage.error(res.msg || t('common.validateError'))
+      } else {
+        ElMessage.success(t('common.success'))
+      }
+    } catch (e) {
+      await revertRegisterEnabled(value)
+      console.log(e)
+    } finally {
+      registerSettingLoading.value = false
+    }
+  }
+
+  async function revertRegisterEnabled(value) {
+    registerSettingReady.value = false
+    registerEnabled.value = !value
+    await nextTick()
+    registerSettingReady.value = true
+  }
 
   // 重置查询条件
   function resetQuery() {
@@ -257,7 +315,12 @@
   }
 
 
-  onMounted(queryData)
+  onMounted(() => {
+    queryData()
+    if (hasPerm('system:user:upd')) {
+      loadRegisterSetting()
+    }
+  })
 
   // 删除
   const selectedRowKeyList = ref([])
@@ -270,19 +333,19 @@
     if (row) {
       await handleDelete([row.userId])
     } else {
-      ElMessage.warning('请至少选择一条数据')
+      ElMessage.warning(t('common.selectAtLeastOne'))
     }
   }
 
   async function handleDelete(id) {
     try {
-      await ElMessageBox.confirm('确定要删除吗？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+      await ElMessageBox.confirm(t('common.confirmDelete'), t('common.tip'), {
+        confirmButtonText: t('common.confirm'),
+        cancelButtonText: t('common.cancel'),
         type: 'warning'
       })
       await userApi.delete(id)
-      ElMessage.success('删除成功')
+      ElMessage.success(t('common.deleteSuccess'))
       queryData()
     } catch (e) {
     }
@@ -291,11 +354,11 @@
   // 批量删除
   function confirmBatchDelete() {
     ElMessageBox.confirm(
-        '确定要批量删除这些数据吗?',
-        '提示',
+        t('common.confirmBatchDelete'),
+        t('common.tip'),
         {
-          confirmButtonText: '删除',
-          cancelButtonText: '取消',
+          confirmButtonText: t('common.delete'),
+          cancelButtonText: t('common.cancel'),
           type: 'warning'
         }
     )
@@ -311,10 +374,10 @@
   async function requestBatchDelete() {
     try {
       await userApi.batchDelete(selectedRowKeyList.value)
-      ElMessage.success('删除成功')
+      ElMessage.success(t('common.deleteSuccess'))
       queryData()
     } catch (e) {
-      ElMessage.error('删除失败')
+      ElMessage.error(t('common.deleteFailed'))
     }
   }
 
@@ -326,17 +389,17 @@
   }
 
   // -------------------------- 排序字段 -------------------------
-  const sortItemOptions = ref([
-    {label: '用户ID', column: 'user_id', isAsc: false},
-    {label: '用户名', column: 'username', isAsc: false},
-    {label: '昵称', column: 'nickname', isAsc: false},
-    {label: '密码', column: 'password', isAsc: false},
-    {label: '性别', column: 'gender', isAsc: false},
-    {label: '头像', column: 'avatar', isAsc: false},
-    {label: '创建时间', column: 'create_time', isAsc: false},
-    {label: '更新时间', column: 'update_time', isAsc: false},
-    {label: '创建用户', column: 'create_user', isAsc: false},
-    {label: '更新用户', column: 'update_user', isAsc: false},
+  const sortItemOptions = computed(() => [
+    {label: t('user.userId'), column: 'user_id', isAsc: false},
+    {label: t('user.username'), column: 'username', isAsc: false},
+    {label: t('user.nickname'), column: 'nickname', isAsc: false},
+    {label: t('user.password'), column: 'password', isAsc: false},
+    {label: t('user.gender'), column: 'gender', isAsc: false},
+    {label: t('user.avatar'), column: 'avatar', isAsc: false},
+    {label: t('common.createTime'), column: 'create_time', isAsc: false},
+    {label: t('common.updateTime'), column: 'update_time', isAsc: false},
+    {label: t('common.createUser'), column: 'create_user', isAsc: false},
+    {label: t('common.updateUser'), column: 'update_user', isAsc: false},
   ])
 
   const selectedSortItems = ref([])
@@ -370,6 +433,27 @@
   // --------------------------------------------------------
 </script>
 <style scoped lang="scss">
+.register-setting {
+  margin-bottom: 16px;
+}
+
+.register-setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.register-setting-title {
+  font-weight: 600;
+}
+
+.register-setting-tip {
+  margin-top: 4px;
+  color: var(--el-text-color-secondary);
+  font-size: 13px;
+}
+
 .avatar-fallback {
   width: 100%;
   height: 100%;

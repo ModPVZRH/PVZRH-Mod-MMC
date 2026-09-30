@@ -5,9 +5,12 @@ import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.extension.service.IService;
 import top.ehre.mod.mods.domain.vo.ModsVO;
 import top.ehre.mod.mods.domain.vo.ModsCountVO;
+import top.ehre.mod.mods.domain.vo.ModVersionVO;
 import top.ehre.mod.mods.domain.dto.ModsPageDTO;
 import top.ehre.mod.mods.domain.dto.ModsAddDTO;
 import top.ehre.mod.mods.domain.dto.ModsUpdateDTO;
+import top.ehre.mod.mods.domain.dto.ModVersionAddDTO;
+import top.ehre.mod.mods.domain.dto.ModVersionUpdateDTO;
 import top.ehre.mod.util.PageResult;
 
 import java.util.List;
@@ -42,4 +45,12 @@ public interface ModsService extends IService<ModsEntity> {
     ModsCountVO incrementDownloadCount(String id);
 
     ModsCountVO incrementViewCount(String id);
+
+    List<ModVersionVO> listVersions(String modId);
+
+    ModVersionVO addVersion(String modId, ModVersionAddDTO modVersionAddDTO);
+
+    boolean updateVersion(ModVersionUpdateDTO modVersionUpdateDTO);
+
+    boolean deleteVersion(String id);
 }

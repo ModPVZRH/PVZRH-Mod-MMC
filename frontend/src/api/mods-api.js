@@ -23,5 +23,21 @@ export const modsApi = {
 
   get: (id) => {
     return getRequest(`/mods/${id}`);
+  },
+
+  listVersions: (modId) => {
+    return getRequest(`/mods/${modId}/versions`);
+  },
+
+  addVersion: (modId, param) => {
+    return postRequest(`/mods/${modId}/versions`, param);
+  },
+
+  updateVersion: (param) => {
+    return putRequest('/mods/version/update', param);
+  },
+
+  deleteVersion: (id) => {
+    return deleteRequest(`/mods/version/${id}`);
   }
 };

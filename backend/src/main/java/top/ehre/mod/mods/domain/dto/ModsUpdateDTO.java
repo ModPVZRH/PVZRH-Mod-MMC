@@ -76,6 +76,9 @@ public class ModsUpdateDTO {
     @ApiModelProperty("Mod版本")
     private String version;
 
+    @ApiModelProperty("版本列表。传入时整体同步；不传则不改已有版本")
+    private List<ModVersionSaveDTO> versions;
+
     @ApiModelProperty("文件大小(")
     private Long fileSize;
 

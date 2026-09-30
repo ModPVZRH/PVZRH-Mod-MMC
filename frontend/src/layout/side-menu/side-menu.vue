@@ -19,12 +19,15 @@
 </template>
 <script setup>
 import {ref, computed, watch} from 'vue'
+import {useI18n} from 'vue-i18n'
 import RecursiveMenu from "@/layout/side-menu/recursive-menu.vue";
 import {useMenuStore} from "@/stores/menu.js";
 import {HOME_PAGE} from "@/constants/index.js";
 import {useRoute, useRouter} from "vue-router";
 import {useAdminConfigStore} from "@/stores/admin-config.js";
 import _ from 'lodash'
+
+const {t} = useI18n()
 
 const props = defineProps({
   collapse: {
@@ -34,7 +37,7 @@ const props = defineProps({
 })
 
 const menuData = computed(() => useMenuStore().menuTree)
-const websiteName = computed(() => useAdminConfigStore().websiteName)
+const websiteName = computed(() => t('app.name'))
 //菜单宽度
 const sideMenuWidth = computed(() => useAdminConfigStore().sideMenuWidth)
 const router = useRouter()

@@ -2,6 +2,7 @@ import {createRouter, createWebHistory} from 'vue-router'
 import {HOME_PAGE, LAYOUT} from "@/constants/index.js";
 import {useUserStore} from "@/stores/user.js";
 import {useMenuStore} from "@/stores/menu.js";
+import {systemSettingApi} from "@/api/system-setting-api.js";
 
 export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -53,7 +54,18 @@ router.beforeEach(async (to, from, next) => {
   if (!token) {
     useUserStore().reset()
     if (to.name === 'login') next()
-    else if (to.path === '/register') next()
+    else if (to.path === '/register') {
+      try {
+        const res = await systemSettingApi.getPublic()
+        if (res?.data?.registerEnabled === false) {
+          next({path: '/login'})
+          return
+        }
+      } catch (e) {
+        // 读不到开关时保持原注册页可用，真正提交仍由后端拦截
+      }
+      next()
+    }
     else next({path: '/login'})
     return
   }

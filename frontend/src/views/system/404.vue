@@ -1,11 +1,11 @@
 <template>
   <el-result
     status="404"
-    title="对不起，您访问的内容不存在！"
-    sub-title="请检查您输入的地址是否正确"
+    :title="$t('error.notFoundTitle')"
+    :sub-title="$t('error.notFoundSub')"
   >
     <template #extra>
-      <el-button type="primary" @click="goHome">返回首页</el-button>
+      <el-button type="primary" @click="goHome">{{ $t('error.backHome') }}</el-button>
     </template>
   </el-result>
 </template>

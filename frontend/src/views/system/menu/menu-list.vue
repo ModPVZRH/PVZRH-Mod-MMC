@@ -5,7 +5,7 @@
         <div class="query-operation">
           <div class="sort-query">
             <div class="query-item">
-              <div class="query-placeholder">排序字段:</div>
+              <div class="query-placeholder">{{ $t('common.sortField') }}:</div>
               <div class="query-input">
                 <el-select
                     v-model="selectedSortItems"
@@ -13,7 +13,7 @@
                     collapse-tags
                     collapse-tags-tooltip
                     :max-collapse-tags="4"
-                    placeholder="排序字段"
+                    :placeholder="$t('common.sortField')"
                     value-key="column"
                     @change="sortItemChange"
                     style="min-width: 260px; max-width: 600px;"
@@ -56,13 +56,13 @@
               <el-icon>
                 <search/>
               </el-icon>
-              查询
+              {{ $t('common.query') }}
             </el-button>
             <el-button @click="resetQuery">
               <el-icon>
                 <refresh/>
               </el-icon>
-              重置
+              {{ $t('common.reset') }}
             </el-button>
           </div>
         </div>
@@ -76,14 +76,14 @@
             <el-icon>
               <plus />
             </el-icon>
-            新增
+            {{ $t('common.add') }}
           </el-button>
           <el-button @click="confirmBatchDelete" type="danger" plain
                      :disabled="selectedRowKeyList.length === 0" v-if="hasPerm('system:menu:del')">
             <el-icon>
               <Delete />
             </el-icon>
-            批量删除
+            {{ $t('common.batchDelete') }}
           </el-button>
         </div>
 
@@ -97,36 +97,36 @@
               :tree-props="{ children: 'children', checkStrictly : true }"
           >
             <el-table-column type="selection" width="42" />
-            <el-table-column prop="menuId" label="菜单ID" min-width="150" />
-            <el-table-column prop="menuName" label="菜单名称" min-width="120" />
-            <el-table-column prop="type" label="权限类型" width="90">
+            <el-table-column prop="menuId" :label="$t('menuManage.menuId')" min-width="150" />
+            <el-table-column prop="menuName" :label="$t('menuManage.menuName')" min-width="120" />
+            <el-table-column prop="type" :label="$t('menuManage.type')" width="90">
               <template #default="scope">
                 <el-tag effect="dark" :type="getTypeOptionsType(scope.row.type)">
                   {{ getTypeOptionsLabel(scope.row.type) }}
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="code" label="权限字符串" min-width="120" />
-            <el-table-column prop="uri" label="路由地址" min-width="220" />
-            <el-table-column prop="componentPath" label="组件路径" min-width="300" />
-            <el-table-column prop="icon" label="图标" min-width="120">
+            <el-table-column prop="code" :label="$t('menuManage.code')" min-width="120" />
+            <el-table-column prop="uri" :label="$t('menuManage.uri')" min-width="220" />
+            <el-table-column prop="componentPath" :label="$t('menuManage.componentPath')" min-width="300" />
+            <el-table-column prop="icon" :label="$t('menuManage.icon')" min-width="120">
               <template #default="scope">
                 <component :is="scope.row.icon" style="width: 24px; height: 24px;">
                 </component>
               </template>
             </el-table-column>
-            <el-table-column prop="priority" label="排序优先级" min-width="120" />
-            <el-table-column prop="createTime" label="创建时间" min-width="120" />
-            <el-table-column prop="updateTime" label="更新时间" min-width="120" />
-            <el-table-column prop="createUser" label="创建用户" min-width="120" />
-            <el-table-column prop="updateUser" label="更新用户" min-width="120" />
-            <el-table-column fixed="right" label="操作" width="120">
+            <el-table-column prop="priority" :label="$t('menuManage.priority')" min-width="120" />
+            <el-table-column prop="createTime" :label="$t('common.createTime')" min-width="120" />
+            <el-table-column prop="updateTime" :label="$t('common.updateTime')" min-width="120" />
+            <el-table-column prop="createUser" :label="$t('common.createUser')" min-width="120" />
+            <el-table-column prop="updateUser" :label="$t('common.updateUser')" min-width="120" />
+            <el-table-column fixed="right" :label="$t('common.operation')" width="120">
               <template #default="scope">
                 <el-button link type="primary" @click="showForm(scope.row)" v-if="hasPerm('system:menu:upd')">
-                  编辑
+                  {{ $t('common.edit') }}
                 </el-button>
                 <el-button link type="danger" @click="onDelete(scope.row)" v-if="hasPerm('system:menu:del')">
-                  删除
+                  {{ $t('common.delete') }}
                 </el-button>
               </template>
             </el-table-column>
@@ -153,26 +153,28 @@
 </template>
 
 <script setup>
-  import { ref, reactive, onMounted, watch } from 'vue'
+  import { ref, reactive, onMounted, watch, computed } from 'vue'
+  import { useI18n } from 'vue-i18n'
   import { menuApi } from '@/api/menu-api'
   import MenuForm from './menu-form.vue'
   import {Delete, Plus, Refresh, Search, ArrowUp, ArrowDown} from '@element-plus/icons-vue'
   import {hasPerm} from "@/utils/permission.js";
+  const { t } = useI18n()
   // ------------------------ 导入列表 ------------------------
   // --------------------------------------------------------
   // ------------------------ 枚举量 ------------------------
-  const typeOptions = [
-    {label: '目录', value: 1, type: 'success'},
-    {label: '菜单', value: 2, type: 'warning'},
-    {label: '功能点', value: 3, type: 'danger'},
-  ]
+  const typeOptions = computed(() => [
+    {label: t('menuManage.directory'), value: 1, type: 'success'},
+    {label: t('menuManage.menu'), value: 2, type: 'warning'},
+    {label: t('menuManage.point'), value: 3, type: 'danger'},
+  ])
 
   function getTypeOptionsLabel(value) {
-    const option = typeOptions.find(option => option.value === value)
+    const option = typeOptions.value.find(option => option.value === value)
     return option ? option.label : ''
   }
   function getTypeOptionsType(value) {
-    const option = typeOptions.find(option => option.value === value)
+    const option = typeOptions.value.find(option => option.value === value)
     return option ? option.type : ''
   }
   // --------------------------------------------------------
@@ -233,19 +235,19 @@
     if (row) {
       await handleDelete([row.menuId])
     } else {
-      ElMessage.warning('请至少选择一条数据')
+      ElMessage.warning(t('common.selectAtLeastOne'))
     }
   }
 
   async function handleDelete(id) {
     try {
-      await ElMessageBox.confirm('确定要删除吗？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+      await ElMessageBox.confirm(t('common.confirmDelete'), t('common.tip'), {
+        confirmButtonText: t('common.confirm'),
+        cancelButtonText: t('common.cancel'),
         type: 'warning'
       })
       await menuApi.delete(id)
-      ElMessage.success('删除成功')
+      ElMessage.success(t('common.deleteSuccess'))
       queryData()
     } catch (e) {
     }
@@ -254,11 +256,11 @@
   // 批量删除
   function confirmBatchDelete() {
     ElMessageBox.confirm(
-        '确定要批量删除这些数据吗?',
-        '提示',
+        t('common.confirmBatchDelete'),
+        t('common.tip'),
         {
-          confirmButtonText: '删除',
-          cancelButtonText: '取消',
+          confirmButtonText: t('common.delete'),
+          cancelButtonText: t('common.cancel'),
           type: 'warning'
         }
     )
@@ -274,10 +276,10 @@
   async function requestBatchDelete() {
     try {
       await menuApi.batchDelete(selectedRowKeyList.value)
-      ElMessage.success('删除成功')
+      ElMessage.success(t('common.deleteSuccess'))
       queryData()
     } catch (e) {
-      ElMessage.error('删除失败')
+      ElMessage.error(t('common.deleteFailed'))
     }
   }
 
@@ -288,20 +290,20 @@
     formRef.value.show(row)
   }
   // -------------------------- 排序字段 -------------------------
-  const sortItemOptions = ref([
-    {label: '菜单ID', column: 'menu_id', isAsc: false},
-    {label: '菜单名称', column: 'menu_name', isAsc: false},
-    {label: '父菜单ID', column: 'parent_id', isAsc: false},
-    {label: '权限类型', column: 'type', isAsc: false},
-    {label: '权限字符串', column: 'code', isAsc: false},
-    {label: '路由地址', column: 'uri', isAsc: false},
-    {label: '组件路径', column: 'component_path', isAsc: false},
-    {label: '图标', column: 'icon', isAsc: false},
-    {label: '排序优先级', column: 'priority', isAsc: false},
-    {label: '创建时间', column: 'create_time', isAsc: false},
-    {label: '更新时间', column: 'update_time', isAsc: false},
-    {label: '创建用户', column: 'create_user', isAsc: false},
-    {label: '更新用户', column: 'update_user', isAsc: false},
+  const sortItemOptions = computed(() => [
+    {label: t('menuManage.menuId'), column: 'menu_id', isAsc: false},
+    {label: t('menuManage.menuName'), column: 'menu_name', isAsc: false},
+    {label: t('menuManage.parentId'), column: 'parent_id', isAsc: false},
+    {label: t('menuManage.type'), column: 'type', isAsc: false},
+    {label: t('menuManage.code'), column: 'code', isAsc: false},
+    {label: t('menuManage.uri'), column: 'uri', isAsc: false},
+    {label: t('menuManage.componentPath'), column: 'component_path', isAsc: false},
+    {label: t('menuManage.icon'), column: 'icon', isAsc: false},
+    {label: t('menuManage.priority'), column: 'priority', isAsc: false},
+    {label: t('common.createTime'), column: 'create_time', isAsc: false},
+    {label: t('common.updateTime'), column: 'update_time', isAsc: false},
+    {label: t('common.createUser'), column: 'create_user', isAsc: false},
+    {label: t('common.updateUser'), column: 'update_user', isAsc: false},
   ])
 
   const selectedSortItems = ref([])

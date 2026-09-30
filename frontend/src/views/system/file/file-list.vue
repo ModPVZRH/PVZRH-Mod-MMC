@@ -5,7 +5,7 @@
         <div class="query-operation">
           <div class="sort-query">
             <div class="query-item">
-              <div class="query-placeholder">排序字段:</div>
+              <div class="query-placeholder">{{ $t('common.sortField') }}:</div>
               <div class="query-input">
                 <el-select
                     v-model="selectedSortItems"
@@ -13,7 +13,7 @@
                     collapse-tags
                     collapse-tags-tooltip
                     :max-collapse-tags="4"
-                    placeholder="排序字段"
+                    :placeholder="$t('common.sortField')"
                     value-key="column"
                     @change="sortItemChange"
                     style="min-width: 260px; max-width: 600px;"
@@ -51,9 +51,9 @@
           </div>
           <div class="search-query">
             <div class="query-item">
-              <div class="query-placeholder">文件名称:</div>
+              <div class="query-placeholder">{{ $t('file.fileName') }}:</div>
               <div class="query-input">
-                <el-input v-model="queryForm.fileName" placeholder="文件名称"/>
+                <el-input v-model="queryForm.fileName" :placeholder="$t('file.fileName')"/>
               </div>
             </div>
           </div>
@@ -62,13 +62,13 @@
               <el-icon>
                 <search/>
               </el-icon>
-              查询
+              {{ $t('common.query') }}
             </el-button>
             <el-button @click="resetQuery">
               <el-icon>
                 <refresh/>
               </el-icon>
-              重置
+              {{ $t('common.reset') }}
             </el-button>
           </div>
         </div>
@@ -82,14 +82,14 @@
             <el-icon>
               <plus />
             </el-icon>
-            新增
+            {{ $t('common.add') }}
           </el-button>
           <el-button @click="confirmBatchDelete" type="danger" plain
                      :disabled="selectedRowKeyList.length === 0" v-if="hasPerm('system:file:del')">
             <el-icon>
               <Delete />
             </el-icon>
-            批量删除
+            {{ $t('common.batchDelete') }}
           </el-button>
         </div>
 
@@ -102,26 +102,26 @@
               style="width: 100%"
           >
             <el-table-column type="selection" width="42" />
-            <el-table-column prop="fileId" label="文件ID" min-width="120" />
-            <el-table-column prop="folderType" label="文件夹类型" min-width="120">
+            <el-table-column prop="fileId" :label="$t('file.fileId')" min-width="120" />
+            <el-table-column prop="folderType" :label="$t('file.folderType')" min-width="120">
               <template #default="scope">
                 {{ getFolderTypeOptionsLabel(scope.row.folderType) }}
               </template>
             </el-table-column>
-            <el-table-column prop="fileName" label="文件名称" min-width="120" />
-            <el-table-column prop="fileSize" label="文件大小" min-width="120" />
-            <el-table-column prop="fileType" label="文件类型" min-width="120" />
-            <el-table-column prop="createTime" label="创建时间" min-width="120" />
-            <el-table-column prop="updateTime" label="更新时间" min-width="120" />
-            <el-table-column prop="createUser" label="创建用户" min-width="120" />
-            <el-table-column prop="updateUser" label="更新用户" min-width="120" />
-            <el-table-column fixed="right" label="操作" width="120">
+            <el-table-column prop="fileName" :label="$t('file.fileName')" min-width="120" />
+            <el-table-column prop="fileSize" :label="$t('file.fileSize')" min-width="120" />
+            <el-table-column prop="fileType" :label="$t('file.fileType')" min-width="120" />
+            <el-table-column prop="createTime" :label="$t('common.createTime')" min-width="120" />
+            <el-table-column prop="updateTime" :label="$t('common.updateTime')" min-width="120" />
+            <el-table-column prop="createUser" :label="$t('common.createUser')" min-width="120" />
+            <el-table-column prop="updateUser" :label="$t('common.updateUser')" min-width="120" />
+            <el-table-column fixed="right" :label="$t('common.operation')" width="120">
               <template #default="scope">
                 <el-button link type="primary" @click="showForm(scope.row)" v-if="hasPerm('system:file:upd')">
-                  编辑
+                  {{ $t('common.edit') }}
                 </el-button>
                 <el-button link type="danger" @click="onDelete(scope.row)" v-if="hasPerm('system:file:del')">
-                  删除
+                  {{ $t('common.delete') }}
                 </el-button>
               </template>
             </el-table-column>
@@ -148,19 +148,21 @@
 </template>
 
 <script setup>
-  import { ref, reactive, onMounted, watch } from 'vue'
+  import { ref, reactive, onMounted, watch, computed } from 'vue'
+  import { useI18n } from 'vue-i18n'
   import { fileApi } from '@/api/file-api'
   import FileForm from './file-form.vue'
   import {Delete, Plus, Refresh, Search, ArrowUp, ArrowDown} from '@element-plus/icons-vue'
   import {hasPerm} from "@/utils/permission.js";
+  const { t } = useI18n()
   // ------------------------ 枚举量 ------------------------
-  const folderTypeOptions = [
-    { label: '头像', value: 1 },
-    { label: '其他', value: 2 },
-    { label: '模组图标', value: 3 },
-  ]
+  const folderTypeOptions = computed(() => [
+    { label: t('file.avatar'), value: 1 },
+    { label: t('file.other'), value: 2 },
+    { label: t('file.modIcon'), value: 3 },
+  ])
   function getFolderTypeOptionsLabel(value) {
-    const option = folderTypeOptions.find(option => option.value === value)
+    const option = folderTypeOptions.value.find(option => option.value === value)
     return option ? option.label : ''
   }
 
@@ -224,19 +226,19 @@
     if (row) {
       await handleDelete([row.fileId])
     } else {
-      ElMessage.warning('请至少选择一条数据')
+      ElMessage.warning(t('common.selectAtLeastOne'))
     }
   }
 
   async function handleDelete(id) {
     try {
-      await ElMessageBox.confirm('确定要删除吗？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+      await ElMessageBox.confirm(t('common.confirmDelete'), t('common.tip'), {
+        confirmButtonText: t('common.confirm'),
+        cancelButtonText: t('common.cancel'),
         type: 'warning'
       })
       await fileApi.delete(id)
-      ElMessage.success('删除成功')
+      ElMessage.success(t('common.deleteSuccess'))
       queryData()
     } catch (e) {
     }
@@ -245,11 +247,11 @@
   // 批量删除
   function confirmBatchDelete() {
     ElMessageBox.confirm(
-        '确定要批量删除这些数据吗?',
-        '提示',
+        t('common.confirmBatchDelete'),
+        t('common.tip'),
         {
-          confirmButtonText: '删除',
-          cancelButtonText: '取消',
+          confirmButtonText: t('common.delete'),
+          cancelButtonText: t('common.cancel'),
           type: 'warning'
         }
     )
@@ -265,10 +267,10 @@
   async function requestBatchDelete() {
     try {
       await fileApi.batchDelete(selectedRowKeyList.value)
-      ElMessage.success('删除成功')
+      ElMessage.success(t('common.deleteSuccess'))
       queryData()
     } catch (e) {
-      ElMessage.error('删除失败')
+      ElMessage.error(t('common.deleteFailed'))
     }
   }
 
@@ -279,16 +281,16 @@
     formRef.value.show(row)
   }
   // -------------------------- 排序字段 -------------------------
-  const sortItemOptions = ref([
-    {label: '文件ID', column: 'file_id', isAsc: false},
-    {label: '文件夹类型', column: 'folder_type', isAsc: false},
-    {label: '文件名称', column: 'file_name', isAsc: false},
-    {label: '文件大小', column: 'file_size', isAsc: false},
-    {label: '文件类型', column: 'file_type', isAsc: false},
-    {label: '创建时间', column: 'create_time', isAsc: false},
-    {label: '更新时间', column: 'update_time', isAsc: false},
-    {label: '创建用户', column: 'create_user', isAsc: false},
-    {label: '更新用户', column: 'update_user', isAsc: false},
+  const sortItemOptions = computed(() => [
+    {label: t('file.fileId'), column: 'file_id', isAsc: false},
+    {label: t('file.folderType'), column: 'folder_type', isAsc: false},
+    {label: t('file.fileName'), column: 'file_name', isAsc: false},
+    {label: t('file.fileSize'), column: 'file_size', isAsc: false},
+    {label: t('file.fileType'), column: 'file_type', isAsc: false},
+    {label: t('common.createTime'), column: 'create_time', isAsc: false},
+    {label: t('common.updateTime'), column: 'update_time', isAsc: false},
+    {label: t('common.createUser'), column: 'create_user', isAsc: false},
+    {label: t('common.updateUser'), column: 'update_user', isAsc: false},
   ])
 
   const selectedSortItems = ref([])

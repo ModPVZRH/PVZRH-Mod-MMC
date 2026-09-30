@@ -14,17 +14,17 @@
               />
             </div>
             <div class="welcome-info">
-              <h2 class="greeting">{{ greeting }}，{{ userInfo.nickname }}</h2>
-              <p class="welcome-text">欢迎回到模组管理系统，今天也一起把内容维护好。</p>
+              <h2 class="greeting">{{ t('home.greetingWithName', { greeting, name: userInfo.nickname }) }}</h2>
+              <p class="welcome-text">{{ $t('home.welcome') }}</p>
             </div>
             <div class="user-info">
               <div class="info-item">
-                <span class="label">用户名</span>
+                <span class="label">{{ $t('home.username') }}</span>
                 <span class="value">{{ userInfo.username }}</span>
               </div>
               <div class="info-item">
-                <span class="label">角色</span>
-                <span class="value">{{ userInfo.roles?.join(', ') || '暂无角色' }}</span>
+                <span class="label">{{ $t('home.role') }}</span>
+                <span class="value">{{ userInfo.roles?.join(', ') || $t('home.noRole') }}</span>
               </div>
             </div>
           </div>
@@ -57,27 +57,27 @@
         <el-card shadow="never" class="system-card">
           <template #header>
             <div class="card-header">
-              <span>系统信息</span>
+              <span>{{ $t('home.systemInfo') }}</span>
             </div>
           </template>
           <div class="system-info">
             <div class="info-item">
-              <span class="label">系统名称：</span>
-              <span class="value">模组管理系统</span>
+              <span class="label">{{ $t('home.systemName') }}</span>
+              <span class="value">{{ $t('app.name') }}</span>
             </div>
             <div class="info-item">
-              <span class="label">系统版本：</span>
+              <span class="label">{{ $t('home.systemVersion') }}</span>
               <span class="value">1.0.0</span>
             </div>
             <div class="info-item">
-              <span class="label">后端框架：</span>
+              <span class="label">{{ $t('home.backend') }}</span>
               <div class="value-container">
                 <div>Spring Boot 3 + Spring Security</div>
                 <div>MySQL + Redis</div>
               </div>
             </div>
             <div class="info-item">
-              <span class="label">前端框架：</span>
+              <span class="label">{{ $t('home.frontend') }}</span>
               <span class="value">Vue 3 + Element Plus + Axios</span>
             </div>
           </div>
@@ -87,7 +87,7 @@
         <el-card shadow="never" class="quick-nav-card" v-if="hasPerm('system:role:get')">
           <template #header>
             <div class="card-header">
-              <span>快捷导航</span>
+              <span>{{ $t('home.quickNav') }}</span>
             </div>
           </template>
           <div class="quick-nav">
@@ -108,8 +108,9 @@
 </template>
 
 <script setup>
-  import {ref, computed, onMounted} from 'vue'
+  import {computed, onMounted, reactive} from 'vue'
   import {useRouter} from 'vue-router'
+  import {useI18n} from 'vue-i18n'
   import {User, Setting, Menu, Files, Edit, List, Upload} from '@element-plus/icons-vue'
   import {userApi} from '@/api/user-api'
   import {roleApi} from '@/api/role-api'
@@ -118,6 +119,7 @@
   import {useUserStore} from '@/stores/user'
 import {hasPerm} from "@/utils/permission.js";
 import UserAvatar from "@/components/user-avatar.vue";
+  const {t} = useI18n()
   const router = useRouter()
   const userStore = useUserStore()
 
@@ -135,65 +137,72 @@ import UserAvatar from "@/components/user-avatar.vue";
   // 问候语
   const greeting = computed(() => {
     const hour = new Date().getHours()
-    if (hour < 6) return '凌晨好'
-    if (hour < 9) return '早上好'
-    if (hour < 12) return '上午好'
-    if (hour < 14) return '中午好'
-    if (hour < 17) return '下午好'
-    if (hour < 19) return '傍晚好'
-    return '晚上好'
+    if (hour < 6) return t('home.greetLateNight')
+    if (hour < 9) return t('home.greetMorning')
+    if (hour < 12) return t('home.greetForenoon')
+    if (hour < 14) return t('home.greetNoon')
+    if (hour < 17) return t('home.greetAfternoon')
+    if (hour < 19) return t('home.greetEvening')
+    return t('home.greetNight')
+  })
+
+  const statsCounts = reactive({
+    mods: '0',
+    users: '0',
+    roles: '0',
+    files: '0'
   })
 
   // Statistics Data
-  const statsData = ref([
+  const statsData = computed(() => [
     {
-      title: '模组总数',
-      value: '0',
+      title: t('home.modsTotal'),
+      value: statsCounts.mods,
       icon: 'List',
       color: 'linear-gradient(135deg, #4f8cff, #2563eb)'
     },
     {
-      title: '总用户数',
-      value: '0',
+      title: t('home.usersTotal'),
+      value: statsCounts.users,
       icon: 'User',
       color: 'linear-gradient(135deg, #36cfc9, #0891b2)'
     },
     {
-      title: '总角色数',
-      value: '0',
+      title: t('home.rolesTotal'),
+      value: statsCounts.roles,
       icon: 'Setting',
       color: 'linear-gradient(135deg, #73d13d, #16a34a)'
     },
     {
-      title: '总文件数',
-      value: '0',
+      title: t('home.filesTotal'),
+      value: statsCounts.files,
       icon: 'Files',
       color: 'linear-gradient(135deg, #ff9a43, #f97316)'
     }
   ])
 
   // 快捷导航
-  const quickNavs = ref([
+  const quickNavs = computed(() => [
     {
-      name: '模组管理',
+      name: t('menu.mods'),
       path: '/business/mods',
       icon: 'List',
       type: 'primary'
     },
     {
-      name: '用户管理',
+      name: t('menu.user'),
       path: '/system/user',
       icon: 'User',
       type: 'success'
     },
     {
-      name: '角色管理',
+      name: t('menu.role'),
       path: '/system/role',
       icon: 'Setting',
       type: 'warning'
     },
     {
-      name: '文件管理',
+      name: t('menu.file'),
       path: '/system/file',
       icon: 'Files',
       type: 'info'
@@ -211,16 +220,16 @@ import UserAvatar from "@/components/user-avatar.vue";
         fileApi.page({pageNum: 1, pageSize: 1})
       ])
       if (modsRes?.data) {
-        statsData.value[0].value = modsRes.data.total.toString()
+        statsCounts.mods = modsRes.data.total.toString()
       }
       if (userRes?.data) {
-        statsData.value[1].value = userRes.data.total.toString()
+        statsCounts.users = userRes.data.total.toString()
       }
       if (roleRes?.data) {
-        statsData.value[2].value = roleRes.data.total.toString()
+        statsCounts.roles = roleRes.data.total.toString()
       }
       if (fileRes?.data) {
-        statsData.value[3].value = fileRes.data.total.toString()
+        statsCounts.files = fileRes.data.total.toString()
       }
     } catch (error) {
       console.error('获取统计数据失败:', error)

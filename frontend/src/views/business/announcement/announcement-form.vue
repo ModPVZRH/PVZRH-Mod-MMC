@@ -2,28 +2,28 @@
   <div class="drawer-form">
     <el-drawer
       class="announcement-form-drawer"
-      :title="addFlag ? '添加公告' : '编辑公告'"
+      :title="addFlag ? $t('announcement.add') : $t('announcement.edit')"
       :size="drawerSize"
       v-model="visibleFlag"
       :before-close="onClose"
       destroy-on-close
     >
       <el-form ref="formRef" :model="form" :rules="rules" label-width="108px" class="announcement-form">
-        <div class="form-section-title">基本信息</div>
-        <el-form-item label="公告标题" prop="title">
-          <el-input v-model="form.title" placeholder="请输入公告标题" />
+        <div class="form-section-title">{{ $t('common.basicInfo') }}</div>
+        <el-form-item :label="$t('announcement.title')" prop="title">
+          <el-input v-model="form.title" :placeholder="$t('announcement.titlePlaceholder')" />
         </el-form-item>
-        <el-form-item label="是否发布" prop="isPublished">
+        <el-form-item :label="$t('announcement.isPublished')" prop="isPublished">
           <el-switch v-model="form.isPublished" :active-value="true" />
         </el-form-item>
 
-        <div class="form-section-title">公告内容</div>
+        <div class="form-section-title">{{ $t('announcement.content') }}</div>
         <el-form-item prop="content" class="markdown-editor-item" label-width="0">
           <MdEditor
             v-model="form.content"
-            language="zh-CN"
+            :language="mdLang"
             previewTheme="github"
-            placeholder="请输入公告内容，支持 Markdown 语法"
+            :placeholder="$t('announcement.contentPlaceholder')"
             :footers="[]"
             :toolbarsExclude="['github']"
             style="width: 100%; height: 420px"
@@ -34,8 +34,8 @@
 
       <template #footer>
         <div class="drawer-footer">
-          <el-button @click="onClose">取消</el-button>
-          <el-button type="primary" @click="onSubmit">保存</el-button>
+          <el-button @click="onClose">{{ $t('common.cancel') }}</el-button>
+          <el-button type="primary" @click="onSubmit">{{ $t('common.save') }}</el-button>
         </div>
       </template>
     </el-drawer>
@@ -43,12 +43,16 @@
 </template>
 <script setup>
 import { reactive, ref, nextTick, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import _ from 'lodash';
 import { ElMessage } from 'element-plus';
 import { MdEditor } from 'md-editor-v3';
 import 'md-editor-v3/lib/style.css';
 import { announcementApi } from '@/api/announcement-api';
 import { fileApi } from '@/api/file-api.js';
+
+const { t, locale } = useI18n();
+const mdLang = computed(() => locale.value === 'en' ? 'en-US' : 'zh-CN');
 
 const emits = defineEmits(['reloadList']);
 
@@ -88,7 +92,7 @@ async function onUploadImg(files, callback) {
     }
     callback(urls);
   } catch (err) {
-    ElMessage.error('图片上传失败');
+    ElMessage.error(t('mods.imageUploadFailed'));
     callback([]);
   }
 }
@@ -106,20 +110,20 @@ const formDefault = {
 
 let form = reactive({ ...formDefault });
 
-const rules = {
+const rules = computed(() => ({
   title: [{
     required: true,
-    message: '公告标题 必填',
+    message: t('common.required', { field: t('announcement.title') }),
     trigger: 'blur'
   }],
-};
+}));
 
 async function onSubmit() {
   try {
     await formRef.value.validate();
     save();
   } catch (err) {
-    ElMessage.error('参数验证错误，请仔细填写表单数据!');
+    ElMessage.error(t('common.validateError'));
   }
 }
 
@@ -130,7 +134,7 @@ async function save() {
     } else {
       await announcementApi.update(form);
     }
-    ElMessage.success('操作成功');
+    ElMessage.success(t('common.success'));
     emits('reloadList');
     onClose();
   } catch (err) {

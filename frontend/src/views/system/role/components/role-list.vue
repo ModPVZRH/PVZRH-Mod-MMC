@@ -1,9 +1,9 @@
 <template>
   <el-card class="role-container" v-if="hasPerm('system:role:get')">
     <template #header>
-      角色列表
+      {{ $t('role.list') }}
       <el-button style="float: right" type="primary" size="default" @click="showRoleForm"
-                 v-if="hasPerm(['system:role:add'])">添加
+                 v-if="hasPerm(['system:role:add'])">{{ $t('role.add') }}
       </el-button>
     </template>
     <el-menu :default-active="activeKey" @select="(key) => activeKey = key">
@@ -12,9 +12,9 @@
           <template #reference>
             <span>{{ item.roleName }}</span>
           </template>
-          <el-button text bg type="danger" @click="deleteRole(item.roleId)" v-if="hasPerm('system:role:del')">删除
+          <el-button text bg type="danger" @click="deleteRole(item.roleId)" v-if="hasPerm('system:role:del')">{{ $t('common.delete') }}
           </el-button>
-          <el-button text bg type="primary" @click="showRoleForm(item)" v-if="hasPerm('system:role:upd')">编辑</el-button>
+          <el-button text bg type="primary" @click="showRoleForm(item)" v-if="hasPerm('system:role:upd')">{{ $t('common.edit') }}</el-button>
         </el-popover>
       </el-menu-item>
     </el-menu>
@@ -39,10 +39,13 @@
 <script setup>
 import _ from 'lodash';
 import {computed, onMounted, reactive, ref} from 'vue';
+import {useI18n} from 'vue-i18n';
 import {roleApi} from "@/api/role-api.js";
 import {usemodLoadingStore} from "@/stores/mod-loading.js";
 import RoleForm from "./role-form.vue";
 import {hasPerm} from "@/utils/permission.js";
+
+const { t } = useI18n()
 
 const queryFormState = {
   pageNum: 1,
@@ -85,11 +88,11 @@ function showRoleForm(role) {
 function deleteRole(roleId) {
   if (!roleId) return;
   ElMessageBox.confirm(
-      '确定要删除该角色么？',
-      '提示',
+      t('role.confirmDelete'),
+      t('common.tip'),
       {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+        confirmButtonText: t('common.confirm'),
+        cancelButtonText: t('common.cancel'),
         type: 'warning'
       }
   ).then(async () => {
@@ -98,7 +101,7 @@ function deleteRole(roleId) {
       await roleApi.delete(roleId);
       ElMessage({
         type: 'success',
-        message: '删除成功!'
+        message: t('common.deleteSuccess')
       });
       queryData();
     } catch (e) {

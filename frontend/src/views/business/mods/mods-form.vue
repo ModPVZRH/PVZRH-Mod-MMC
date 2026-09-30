@@ -2,28 +2,28 @@
   <div class="drawer-form">
     <el-drawer
       class="mods-form-drawer"
-      :title="addFlag ? '添加模组' : '编辑模组'"
+      :title="addFlag ? $t('mods.add') : $t('mods.edit')"
       :size="drawerSize"
       v-model="visibleFlag"
       :before-close="onClose"
       destroy-on-close
     >
       <el-form ref="formRef" :model="form" :rules="rules" label-width="108px" class="mods-form">
-        <div class="form-section-title">基本信息</div>
+        <div class="form-section-title">{{ $t('common.basicInfo') }}</div>
         <el-row :gutter="16">
           <el-col :span="12">
-            <el-form-item label="Mod名称" prop="modName">
-              <el-input v-model="form.modName" placeholder="请输入 Mod 名称" />
+            <el-form-item :label="$t('mods.name')" prop="modName">
+              <el-input v-model="form.modName" :placeholder="$t('mods.namePlaceholder')" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="Mod英文名" prop="englishName">
-              <el-input v-model="form.englishName" placeholder="请输入英文名" />
+            <el-form-item :label="$t('mods.englishName')" prop="englishName">
+              <el-input v-model="form.englishName" :placeholder="$t('mods.englishPlaceholder')" />
             </el-form-item>
           </el-col>
           <el-col :span="12" v-if="hasPerm('business:mod:sup')">
-            <el-form-item label="作者" prop="authorId">
-              <el-select v-model="form.authorId" placeholder="请选择作者" filterable style="width: 100%">
+            <el-form-item :label="$t('mods.author')" prop="authorId">
+              <el-select v-model="form.authorId" :placeholder="$t('mods.authorPlaceholder')" filterable style="width: 100%">
                 <el-option v-for="item in userList" :key="item.userId" :label="item.nickname" :value="item.userId">
                   <div class="option-item">
                     <UserAvatar :src="item.avatar" :username="item.username" :nickname="item.nickname" :size="24" style="margin-right: 8px;" />
@@ -34,8 +34,8 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="添加共创" prop="otherAuthor">
-              <el-select v-model="form.otherAuthors" multiple placeholder="请选择共创作者" filterable style="width: 100%">
+            <el-form-item :label="$t('mods.otherAuthor')" prop="otherAuthor">
+              <el-select v-model="form.otherAuthors" multiple :placeholder="$t('mods.otherAuthorPlaceholder')" filterable style="width: 100%">
                 <el-option v-for="item in userList" :key="item.userId" :label="item.nickname" :value="item.userId">
                   <div class="option-item">
                     <UserAvatar :src="item.avatar" :username="item.username" :nickname="item.nickname" :size="24" style="margin-right: 8px;" />
@@ -46,33 +46,33 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="支持游戏" prop="gameName">
-              <el-input v-model="form.gameName" placeholder="支持游戏" />
+            <el-form-item :label="$t('mods.gameName')" prop="gameName">
+              <el-input v-model="form.gameName" :placeholder="$t('mods.gameName')" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="支持版本" prop="supportedVersions">
-              <el-input v-model="form.supportedVersions" placeholder="支持版本" />
+            <el-form-item :label="$t('mods.supportedVersions')" prop="supportedVersions">
+              <el-input v-model="form.supportedVersions" :placeholder="$t('mods.supportedVersions')" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="Mod框架" prop="frameworkName">
-              <el-select v-model="form.frameworkName" clearable placeholder="请选择 Mod 框架" style="width: 100%">
+            <el-form-item :label="$t('mods.framework')" prop="frameworkName">
+              <el-select v-model="form.frameworkName" clearable :placeholder="$t('mods.frameworkPlaceholder')" style="width: 100%">
                 <el-option v-for="(option, index) in frameworkNameOptions" :key="index" :label="option.label"
                   :value="option.value" />
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="分类" prop="categoryId">
-              <el-select v-model="form.categoryId" clearable filterable placeholder="请选择分类" style="width: 100%">
+            <el-form-item :label="$t('mods.category')" prop="categoryId">
+              <el-select v-model="form.categoryId" clearable filterable :placeholder="$t('mods.categoryPlaceholder')" style="width: 100%">
                 <el-option v-for="item in categoryList" :key="item.id" :label="item.name" :value="item.id" />
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="标签" prop="tagIds">
-              <el-select v-model="form.tagIds" multiple filterable collapse-tags collapse-tags-tooltip placeholder="请从已有标签中选择" style="width: 100%">
+            <el-form-item :label="$t('mods.tags')" prop="tagIds">
+              <el-select v-model="form.tagIds" multiple filterable collapse-tags collapse-tags-tooltip :placeholder="$t('mods.tagPlaceholder')" style="width: 100%">
                 <el-option v-for="item in tagList" :key="item.id" :label="item.name" :value="item.id">
                   <div class="option-item">
                     <span class="tag-color-dot" :style="{ background: item.color || '#409EFF' }"></span>
@@ -82,30 +82,25 @@
               </el-select>
             </el-form-item>
           </el-col>
-          <el-col :span="12">
-            <el-form-item label="Mod版本" prop="version">
-              <el-input v-model="form.version" placeholder="例如 1.0.0" />
-            </el-form-item>
-          </el-col>
           <el-col :span="24">
-            <el-form-item label="模组图标" prop="iconUrl">
+            <el-form-item :label="$t('mods.icon')" prop="iconUrl">
               <ModIconUpload v-model="form.iconUrl" />
             </el-form-item>
           </el-col>
           <el-col :span="24">
-            <el-form-item label="视频Url" prop="videoUrl">
-              <el-input v-model="form.videoUrl" placeholder="视频地址，选填" />
+            <el-form-item :label="$t('mods.videoUrl')" prop="videoUrl">
+              <el-input v-model="form.videoUrl" :placeholder="$t('mods.videoPlaceholder')" />
             </el-form-item>
           </el-col>
         </el-row>
 
-        <div class="form-section-title">模组介绍</div>
+        <div class="form-section-title">{{ $t('mods.descriptionSection') }}</div>
         <el-form-item prop="modDescription" class="mod-description-item" label-width="0">
           <MdEditor
             v-model="form.modDescription"
-            language="zh-CN"
+            :language="mdLang"
             previewTheme="github"
-            placeholder="请输入 Mod 介绍，支持 Markdown 语法"
+            :placeholder="$t('mods.descriptionPlaceholder')"
             :footers="[]"
             :toolbarsExclude="['github']"
             style="width: 100%; height: 400px"
@@ -113,38 +108,68 @@
           />
         </el-form-item>
 
-        <div class="form-section-title">下载信息</div>
-        <el-form-item label="直链下载" prop="downloadDirectUrl">
-          <el-input v-model="form.downloadDirectUrl" placeholder="直链下载地址" />
-        </el-form-item>
-        <el-form-item label="网盘下载" prop="downloadCloudUrl">
-          <el-input v-model="form.downloadCloudUrl" placeholder="网盘下载地址" />
-        </el-form-item>
+        <div class="form-section-title">{{ $t('mods.downloadSection') }}</div>
+        <p class="version-tip">{{ $t('mods.versionTip') }}</p>
+        <div class="version-toolbar">
+          <el-button type="primary" plain @click="addVersion">{{ $t('mods.addVersion') }}</el-button>
+        </div>
+        <div class="version-list">
+          <div v-for="(item, index) in form.versions" :key="item.uid" class="version-card">
+            <div class="version-card-head">
+              <div>
+                <el-tag v-if="item.current" type="success" size="small">{{ $t('mods.currentVersion') }}</el-tag>
+                <el-button v-else link type="primary" @click="setCurrentVersion(index)">{{ $t('mods.setCurrent') }}</el-button>
+              </div>
+              <el-button link type="danger" :disabled="form.versions.length <= 1" @click="removeVersion(index)">
+                {{ $t('common.delete') }}
+              </el-button>
+            </div>
+            <el-form-item :label="$t('mods.version')" :prop="'versions.' + index + '.version'" :rules="versionFieldRules">
+              <el-input v-model="item.version" :placeholder="$t('mods.versionPlaceholder')" />
+            </el-form-item>
+            <el-form-item :label="$t('mods.versionDescription')">
+              <el-input
+                v-model="item.description"
+                type="textarea"
+                :rows="2"
+                maxlength="2000"
+                show-word-limit
+                :placeholder="$t('mods.versionDescriptionPlaceholder')"
+              />
+            </el-form-item>
+            <el-form-item :label="$t('mods.directUrl')" :prop="'versions.' + index + '.downloadDirectUrl'" :rules="directUrlRules">
+              <el-input v-model="item.downloadDirectUrl" :placeholder="$t('mods.directUrlFull')" />
+            </el-form-item>
+            <el-form-item :label="$t('mods.cloudUrl')" :prop="'versions.' + index + '.downloadCloudUrl'" :rules="cloudUrlRules">
+              <el-input v-model="item.downloadCloudUrl" :placeholder="$t('mods.cloudUrlFull')" />
+            </el-form-item>
+          </div>
+        </div>
 
-        <div class="form-section-title">发布设置</div>
+        <div class="form-section-title">{{ $t('mods.publishSection') }}</div>
         <el-row :gutter="16">
           <el-col :span="8" v-if="hasPerm('business:mod:sup')">
-            <el-form-item label="是否前置" prop="isPreposition">
+            <el-form-item :label="$t('mods.isPreposition')" prop="isPreposition">
               <el-switch v-model="form.isPreposition" :active-value="true" />
             </el-form-item>
           </el-col>
           <el-col :span="8" v-if="hasPerm('business:mod:sup')">
-            <el-form-item label="是否推荐" prop="isFeatured">
+            <el-form-item :label="$t('mods.isFeatured')" prop="isFeatured">
               <el-switch v-model="form.isFeatured" :active-value="true" />
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item label="显示直链" prop="showDirectUrl">
+            <el-form-item :label="$t('mods.showDirectUrl')" prop="showDirectUrl">
               <el-switch v-model="form.showDirectUrl" :active-value="true" />
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item label="是否发布" prop="isVisible">
+            <el-form-item :label="$t('mods.isVisible')" prop="isVisible">
               <el-switch v-model="form.isVisible" :active-value="true" />
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item label="是否整合包" prop="isModpack">
+            <el-form-item :label="$t('mods.isModpack')" prop="isModpack">
               <el-switch v-model="form.isModpack" :active-value="true" />
             </el-form-item>
           </el-col>
@@ -153,8 +178,8 @@
 
       <template #footer>
         <div class="drawer-footer">
-          <el-button @click="onClose">取消</el-button>
-          <el-button type="primary" @click="onSubmit">保存</el-button>
+          <el-button @click="onClose">{{ $t('common.cancel') }}</el-button>
+          <el-button type="primary" @click="onSubmit">{{ $t('common.save') }}</el-button>
         </div>
       </template>
     </el-drawer>
@@ -162,7 +187,7 @@
 </template>
 <script setup>
 import { reactive, ref, nextTick, computed } from 'vue';
-import _ from 'lodash';
+import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { MdEditor } from 'md-editor-v3';
 import 'md-editor-v3/lib/style.css';
@@ -174,6 +199,9 @@ import { fileApi } from '@/api/file-api.js';
 import { hasPerm } from "@/utils/permission.js";
 import UserAvatar from "@/components/user-avatar.vue";
 import ModIconUpload from "@/components/mod-icon-upload.vue";
+
+const { t, locale } = useI18n();
+const mdLang = computed(() => locale.value === 'en' ? 'en-US' : 'zh-CN');
 
 const frameworkNameOptions = [
   { label: 'Bepinex', value: '1' },
@@ -188,6 +216,44 @@ const userList = ref([]);
 const categoryList = ref([]);
 const tagList = ref([]);
 const drawerSize = computed(() => (window.innerWidth < 960 ? '96%' : '880px'));
+let versionSeed = 1;
+
+function blankVersion(current = false) {
+  return {
+    uid: versionSeed++,
+    id: undefined,
+    version: '',
+    description: '',
+    downloadDirectUrl: '',
+    downloadCloudUrl: '',
+    current,
+  };
+}
+
+function normalizeVersions(rowData) {
+  const source = Array.isArray(rowData?.versions) ? rowData.versions : [];
+  const versions = source.map((item) => ({
+    uid: versionSeed++,
+    id: item.id,
+    version: item.version || '',
+    description: item.description || '',
+    downloadDirectUrl: item.downloadDirectUrl || '',
+    downloadCloudUrl: item.downloadCloudUrl || '',
+    current: !!item.current,
+  }));
+  if (!versions.length) {
+    versions.push({
+      ...blankVersion(true),
+      version: rowData?.version || '',
+      downloadDirectUrl: rowData?.downloadDirectUrl || '',
+      downloadCloudUrl: rowData?.downloadCloudUrl || '',
+    });
+  }
+  if (!versions.some((item) => item.current)) {
+    versions[0].current = true;
+  }
+  return versions;
+}
 
 function show(rowData) {
   userApi.getList().then(res => {
@@ -200,12 +266,13 @@ function show(rowData) {
     tagList.value = res.data || [];
   });
   Object.assign(form, formDefault);
-  if (rowData && !_.isEmpty(rowData)) {
+  if (rowData && rowData.id != null) {
     Object.assign(form, rowData);
   }
   form.modDescription = form.modDescription || '';
   form.otherAuthors = form.otherAuthors || [];
   form.tagIds = form.tagIds || [];
+  form.versions = normalizeVersions(rowData && rowData.id != null ? rowData : null);
   form.isModpack = !!form.isModpack;
   visibleFlag.value = true;
   addFlag.value = rowData.id == null;
@@ -219,7 +286,44 @@ function onClose() {
   form.modDescription = '';
   form.otherAuthors = [];
   form.tagIds = [];
+  form.versions = [];
   visibleFlag.value = false;
+}
+
+function addVersion() {
+  form.versions.forEach((item) => {
+    item.current = false;
+  });
+  form.versions.unshift(blankVersion(true));
+}
+
+function setCurrentVersion(index) {
+  form.versions.forEach((item, itemIndex) => {
+    item.current = itemIndex === index;
+  });
+}
+
+function removeVersion(index) {
+  const removed = form.versions[index];
+  form.versions.splice(index, 1);
+  if (removed?.current && form.versions.length) {
+    form.versions[0].current = true;
+  }
+}
+
+function hasDuplicateVersion() {
+  const seen = new Set();
+  for (const item of form.versions) {
+    const version = (item.version || '').trim();
+    if (!version || seen.has(version)) {
+      if (version) {
+        return true;
+      }
+      continue;
+    }
+    seen.add(version);
+  }
+  return false;
 }
 
 async function onUploadImg(files, callback) {
@@ -235,7 +339,7 @@ async function onUploadImg(files, callback) {
     }
     callback(urls);
   } catch (err) {
-    ElMessage.error('图片上传失败');
+    ElMessage.error(t('mods.imageUploadFailed'));
     callback([]);
   }
 }
@@ -268,52 +372,78 @@ const formDefault = {
   isFeatured: undefined,
   isVisible: undefined,
   isModpack: false,
+  versions: [],
   createdAt: undefined,
   updatedAt: undefined,
 };
 
 let form = reactive({ ...formDefault });
 
-const rules = {
+const rules = computed(() => ({
   modName: [{
     required: true,
-    message: 'Mod名称 必填',
-    trigger: 'blur'
-  }],
-  downloadDirectUrl: [{
-    required: true,
-    message: '直链下载地址 必填',
-    trigger: 'blur'
-  }, {
-    pattern: /^https?:\/\/[^\s]+$/,
-    message: '直链下载地址格式不正确',
-    trigger: 'blur'
-  }],
-  downloadCloudUrl: [{
-    required: true,
-    message: '网盘下载地址 必填',
-    trigger: 'blur'
-  }, {
-    pattern: /^https?:\/\/[^\s]+$/,
-    message: '网盘下载地址格式不正确',
-    trigger: 'blur'
-  }],
-  version: [{
-    message: 'Mod版本 必填',
-    trigger: 'blur'
-  }, {
-    pattern: /^\d+\.\d+\.\d+(-[a-zA-Z]+)?$/,
-    message: '版本格式不正确，应为 X.Y.Z 或 X.Y.Z-类型',
+    message: t('common.required', { field: t('mods.name') }),
     trigger: 'blur'
   }]
-};
+}));
+
+const versionFieldRules = computed(() => ([
+  {
+    required: true,
+    message: t('common.required', { field: t('mods.version') }),
+    trigger: 'blur'
+  },
+  {
+    pattern: /^\d+\.\d+\.\d+(-[a-zA-Z]+)?$/,
+    message: t('mods.invalidVersion'),
+    trigger: 'blur'
+  }
+]));
+
+const directUrlRules = computed(() => ([
+  {
+    required: true,
+    message: t('common.required', { field: t('mods.directUrlFull') }),
+    trigger: 'blur'
+  },
+  {
+    pattern: /^https?:\/\/[^\s]+$/,
+    message: t('mods.invalidDirectUrl'),
+    trigger: 'blur'
+  }
+]));
+
+const cloudUrlRules = computed(() => ([
+  {
+    required: true,
+    message: t('common.required', { field: t('mods.cloudUrlFull') }),
+    trigger: 'blur'
+  },
+  {
+    pattern: /^https?:\/\/[^\s]+$/,
+    message: t('mods.invalidCloudUrl'),
+    trigger: 'blur'
+  }
+]));
 
 async function onSubmit() {
+  if (!form.versions.length) {
+    ElMessage.error(t('mods.atLeastOneVersion'));
+    return;
+  }
+  if (hasDuplicateVersion()) {
+    ElMessage.error(t('mods.duplicateVersion'));
+    return;
+  }
+  const current = form.versions.find((item) => item.current) || form.versions[0];
+  form.version = current.version;
+  form.downloadDirectUrl = current.downloadDirectUrl;
+  form.downloadCloudUrl = current.downloadCloudUrl;
   try {
     await formRef.value.validate();
     save();
   } catch (err) {
-    ElMessage.error('参数验证错误，请仔细填写表单数据!');
+    ElMessage.error(t('common.validateError'));
   }
 }
 
@@ -324,7 +454,7 @@ async function save() {
     } else {
       await modsApi.update(form);
     }
-    ElMessage.success('操作成功');
+    ElMessage.success(t('common.success'));
     emits('reloadList');
     onClose();
   } catch (err) {
@@ -366,6 +496,36 @@ defineExpose({
 .form-section-title + .el-row,
 .form-section-title + .el-form-item {
   margin-top: 0;
+}
+
+.version-tip {
+  margin: 0 0 12px;
+  color: var(--el-text-color-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.version-toolbar {
+  margin-bottom: 12px;
+}
+
+.version-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.version-card {
+  padding: 12px 12px 0;
+  border: 1px solid var(--el-border-color);
+  border-radius: 8px;
+}
+
+.version-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
 }
 
 .mod-description-item {

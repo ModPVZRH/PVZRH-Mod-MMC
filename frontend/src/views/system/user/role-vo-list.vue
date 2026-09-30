@@ -5,7 +5,7 @@
         <div class="query-operation">
           <div class="sort-query">
             <div class="query-item">
-              <div class="query-placeholder">排序字段:</div>
+              <div class="query-placeholder">{{ $t('common.sortField') }}:</div>
               <div class="query-input">
                 <el-select
                     v-model="selectedSortItems"
@@ -13,7 +13,7 @@
                     collapse-tags
                     collapse-tags-tooltip
                     :max-collapse-tags="4"
-                    placeholder="排序字段"
+                    :placeholder="$t('common.sortField')"
                     value-key="column"
                     @change="sortItemChange"
                     style="min-width: 260px; max-width: 600px;"
@@ -51,9 +51,9 @@
           </div>
           <div class="search-query">
             <div class="query-item">
-              <div class="query-placeholder">角色名称:</div>
+              <div class="query-placeholder">{{ $t('user.roleName') }}:</div>
               <div class="query-input">
-                <el-input v-model="queryForm.roleName" placeholder="角色名称"/>
+                <el-input v-model="queryForm.roleName" :placeholder="$t('user.roleName')"/>
               </div>
             </div>
           </div>
@@ -62,13 +62,13 @@
               <el-icon>
                 <search/>
               </el-icon>
-              查询
+              {{ $t('common.query') }}
             </el-button>
             <el-button @click="resetQuery">
               <el-icon>
                 <refresh/>
               </el-icon>
-              重置
+              {{ $t('common.reset') }}
             </el-button>
           </div>
         </div>
@@ -84,12 +84,12 @@
               border
               style="width: 100%"
           >
-            <el-table-column prop="roleId" label="角色ID" min-width="120" />
-            <el-table-column prop="roleName" label="角色名称" min-width="120" />
-            <el-table-column prop="createTime" label="创建时间" min-width="120" />
-            <el-table-column prop="updateTime" label="更新时间" min-width="120" />
-            <el-table-column prop="createUser" label="创建用户" min-width="120" />
-            <el-table-column prop="updateUser" label="更新用户" min-width="120" />
+            <el-table-column prop="roleId" :label="$t('user.roleId')" min-width="120" />
+            <el-table-column prop="roleName" :label="$t('user.roleName')" min-width="120" />
+            <el-table-column prop="createTime" :label="$t('common.createTime')" min-width="120" />
+            <el-table-column prop="updateTime" :label="$t('common.updateTime')" min-width="120" />
+            <el-table-column prop="createUser" :label="$t('common.createUser')" min-width="120" />
+            <el-table-column prop="updateUser" :label="$t('common.updateUser')" min-width="120" />
           </el-table>
           <div class="pagination">
             <el-pagination
@@ -115,12 +115,12 @@
               style="width: 100%"
           >
             <el-table-column type="selection" width="42"/>
-            <el-table-column prop="roleId" label="角色ID" min-width="120" />
-            <el-table-column prop="roleName" label="角色名称" min-width="120" />
-            <el-table-column prop="createTime" label="创建时间" min-width="120" />
-            <el-table-column prop="updateTime" label="更新时间" min-width="120" />
-            <el-table-column prop="createUser" label="创建用户" min-width="120" />
-            <el-table-column prop="updateUser" label="更新用户" min-width="120" />
+            <el-table-column prop="roleId" :label="$t('user.roleId')" min-width="120" />
+            <el-table-column prop="roleName" :label="$t('user.roleName')" min-width="120" />
+            <el-table-column prop="createTime" :label="$t('common.createTime')" min-width="120" />
+            <el-table-column prop="updateTime" :label="$t('common.updateTime')" min-width="120" />
+            <el-table-column prop="createUser" :label="$t('common.createUser')" min-width="120" />
+            <el-table-column prop="updateUser" :label="$t('common.updateUser')" min-width="120" />
           </el-table>
           <div class="pagination">
             <el-pagination
@@ -143,7 +143,10 @@
 
 <script setup>
   import {ref, reactive, onMounted, watch, nextTick, computed} from 'vue'
+  import {useI18n} from 'vue-i18n'
   import {roleApi} from '@/api/role-api'
+
+  const { t } = useI18n()
 
   // ------------------------ 属性 ------------------------
   const props = defineProps({
@@ -263,13 +266,13 @@
   });
   // --------------------------------------------------------
   // -------------------------- 排序字段 -------------------------
-  const sortItemOptions = ref([
-    {label: '角色ID', column: 'role_id', isAsc: false},
-    {label: '角色名称', column: 'role_name', isAsc: false},
-    {label: '创建时间', column: 'create_time', isAsc: false},
-    {label: '更新时间', column: 'update_time', isAsc: false},
-    {label: '创建用户', column: 'create_user', isAsc: false},
-    {label: '更新用户', column: 'update_user', isAsc: false},
+  const sortItemOptions = computed(() => [
+    {label: t('user.roleId'), column: 'role_id', isAsc: false},
+    {label: t('user.roleName'), column: 'role_name', isAsc: false},
+    {label: t('common.createTime'), column: 'create_time', isAsc: false},
+    {label: t('common.updateTime'), column: 'update_time', isAsc: false},
+    {label: t('common.createUser'), column: 'create_user', isAsc: false},
+    {label: t('common.updateUser'), column: 'update_user', isAsc: false},
   ])
 
   const selectedSortItems = ref([])

@@ -1,64 +1,66 @@
 <template>
   <div class="drawer-form">
     <el-drawer
-        :title="addFlag ? '添加' : '编辑'"
+        :title="addFlag ? $t('common.addTitle') : $t('common.editTitle')"
         :size="500"
         v-model="visibleFlag"
         :before-close="onClose"
     >
       <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
-        <el-form-item label="文件夹类型" prop="folderType" >
-          <el-select v-model="form.folderType" clearable placeholder="文件夹类型">
+        <el-form-item :label="$t('file.folderType')" prop="folderType" >
+          <el-select v-model="form.folderType" clearable :placeholder="$t('file.folderType')">
             <el-option v-for="(option, index) in folderTypeOptions" :key="index" :label="option.label" :value="option.value"/>
           </el-select>
         </el-form-item>
-        <el-form-item label="文件名称" prop="fileName" >
-          <el-input v-model="form.fileName" placeholder="文件名称"/>
+        <el-form-item :label="$t('file.fileName')" prop="fileName" >
+          <el-input v-model="form.fileName" :placeholder="$t('file.fileName')"/>
         </el-form-item>
-        <el-form-item label="文件大小" prop="fileSize" >
-          <el-input-number v-model="form.fileSize" placeholder="文件大小"/>
+        <el-form-item :label="$t('file.fileSize')" prop="fileSize" >
+          <el-input-number v-model="form.fileSize" :placeholder="$t('file.fileSize')"/>
         </el-form-item>
-        <el-form-item label="文件类型" prop="fileType" >
-          <el-input v-model="form.fileType" placeholder="文件类型"/>
+        <el-form-item :label="$t('file.fileType')" prop="fileType" >
+          <el-input v-model="form.fileType" :placeholder="$t('file.fileType')"/>
         </el-form-item>
-        <el-form-item label="创建时间" prop="createTime"  v-if="false">
+        <el-form-item :label="$t('common.createTime')" prop="createTime"  v-if="false">
           <el-date-picker v-model="form.createTime" type="datetime"
-                          placeholder="创建时间"
+                          :placeholder="$t('common.createTime')"
                           format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss"/>
         </el-form-item>
-        <el-form-item label="更新时间" prop="updateTime"  v-if="false">
+        <el-form-item :label="$t('common.updateTime')" prop="updateTime"  v-if="false">
           <el-date-picker v-model="form.updateTime" type="datetime"
-                          placeholder="更新时间"
+                          :placeholder="$t('common.updateTime')"
                           format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss"/>
         </el-form-item>
-        <el-form-item label="创建用户" prop="createUser"  v-if="false">
-          <el-input v-model="form.createUser" placeholder="创建用户"/>
+        <el-form-item :label="$t('common.createUser')" prop="createUser"  v-if="false">
+          <el-input v-model="form.createUser" :placeholder="$t('common.createUser')"/>
         </el-form-item>
-        <el-form-item label="更新用户" prop="updateUser"  v-if="false">
-          <el-input v-model="form.updateUser" placeholder="更新用户"/>
+        <el-form-item :label="$t('common.updateUser')" prop="updateUser"  v-if="false">
+          <el-input v-model="form.updateUser" :placeholder="$t('common.updateUser')"/>
         </el-form-item>
       </el-form>
 
       <template #footer>
         <div class="drawer-footer">
-          <el-button @click="onClose">取消</el-button>
-          <el-button type="primary" @click="onSubmit">保存</el-button>
+          <el-button @click="onClose">{{ $t('common.cancel') }}</el-button>
+          <el-button type="primary" @click="onSubmit">{{ $t('common.save') }}</el-button>
         </div>
       </template>
     </el-drawer>
   </div>
 </template>
 <script setup>
-  import {reactive, ref, nextTick} from 'vue';
+  import {reactive, ref, nextTick, computed} from 'vue';
+  import {useI18n} from 'vue-i18n';
   import _ from 'lodash';
   import {ElMessage} from 'element-plus';
   import {fileApi} from '@/api/file-api';
+  const { t } = useI18n()
   // ------------------------ 枚举量 ------------------------
-  const folderTypeOptions = [
-    { label: '头像', value: 1 },
-    { label: '其他', value: 2 },
-    { label: '模组图标', value: 3 },
-  ]
+  const folderTypeOptions = computed(() => [
+    { label: t('file.avatar'), value: 1 },
+    { label: t('file.other'), value: 2 },
+    { label: t('file.modIcon'), value: 3 },
+  ])
 
 
 
@@ -108,13 +110,13 @@
 
   let form = reactive({...formDefault});
 
-  const rules = {
+  const rules = computed(() => ({
     folderType: [{
       required: true,
-      message: '文件夹类型 必填',
+      message: t('common.required', { field: t('file.folderType') }),
       trigger: 'blur'
     }],
-  };
+  }));
 
   // 点击确定，验证表单
   async function onSubmit() {
@@ -122,7 +124,7 @@
       await formRef.value.validate();
       save();
     } catch (err) {
-      ElMessage.error('参数验证错误，请仔细填写表单数据!');
+      ElMessage.error(t('common.validateError'));
     }
   }
 
@@ -134,7 +136,7 @@
       } else {
         await fileApi.update(form);
       }
-      ElMessage.success('操作成功');
+      ElMessage.success(t('common.success'));
       emits('reloadList');
       onClose();
     } catch (err) {

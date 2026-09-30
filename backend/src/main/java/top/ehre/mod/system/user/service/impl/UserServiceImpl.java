@@ -11,6 +11,7 @@ import top.ehre.mod.system.menu.mapper.MenuMapper;
 import top.ehre.mod.system.role.domain.entity.RoleEntity;
 import top.ehre.mod.system.role.domain.vo.RoleVO;
 import top.ehre.mod.system.role.mapper.RoleMapper;
+import top.ehre.mod.system.setting.service.SystemSettingService;
 import top.ehre.mod.system.user.domain.dto.RegisterDTO;
 import top.ehre.mod.system.user.domain.dto.UserAddDTO;
 import top.ehre.mod.system.user.domain.dto.UserPageDTO;
@@ -57,6 +58,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
 
     @Resource
     MenuMapper menuMapper;
+
+    @Resource
+    SystemSettingService systemSettingService;
 
     @Resource
     @Lazy
@@ -209,6 +213,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
     @Override
     @Transactional(rollbackFor = Throwable.class)
     public UserVO register(RegisterDTO registerDTO) {
+        if (!systemSettingService.isRegisterEnabled()) {
+            throw new BusinessException("注册已关闭");
+        }
         if (!registerDTO.getPassword().equals(registerDTO.getNewPassword()))
             throw new BusinessException("两次密码不一致");
         String username = registerDTO.getUsername();

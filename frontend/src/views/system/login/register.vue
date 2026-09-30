@@ -1,5 +1,8 @@
 <template>
   <div class="register-container">
+    <div class="register-lang">
+      <LanguageSwitcher light />
+    </div>
     <div class="waves">
       <div class="wave wave1"></div>
       <div class="wave wave2"></div>
@@ -12,47 +15,47 @@
       <div class="brand">
         <img src="/logo.png" alt="logo" class="brand-logo" />
         <div>
-          <h1 class="title">创建账号</h1>
-          <p class="subtitle">注册后即可使用模组管理系统</p>
+          <h1 class="title">{{ $t('register.title') }}</h1>
+          <p class="subtitle">{{ $t('register.subtitle') }}</p>
         </div>
       </div>
 
       <el-form ref="formRef" :model="formData" :rules="rules" class="register-form">
         <el-form-item prop="username" class="custom-form-item">
-          <el-input v-model="formData.username" placeholder="请输入用户名" class="custom-input" />
+          <el-input v-model="formData.username" :placeholder="$t('register.username')" class="custom-input" />
         </el-form-item>
 
         <el-form-item prop="nickname" class="custom-form-item">
-          <el-input v-model="formData.nickname" placeholder="请输入昵称" class="custom-input" />
+          <el-input v-model="formData.nickname" :placeholder="$t('register.nickname')" class="custom-input" />
         </el-form-item>
 
         <el-form-item prop="password" class="custom-form-item">
-          <el-input type="password" v-model="formData.password" placeholder="请输入密码" class="custom-input" />
+          <el-input type="password" v-model="formData.password" :placeholder="$t('register.password')" class="custom-input" />
         </el-form-item>
 
         <el-form-item prop="newPassword" class="custom-form-item">
-          <el-input type="password" v-model="formData.newPassword" placeholder="请确认密码" class="custom-input" />
+          <el-input type="password" v-model="formData.newPassword" :placeholder="$t('register.confirmPassword')" class="custom-input" />
         </el-form-item>
 
         <el-form-item prop="captchaCode" class="custom-form-item">
           <div class="captcha-row">
-            <el-input v-model="formData.captchaCode" placeholder="请输入验证码" class="custom-input" />
-            <img :src="captchaBase64Image" @click="refreshCaptcha" alt="验证码" class="captcha-img">
+            <el-input v-model="formData.captchaCode" :placeholder="$t('register.captcha')" class="custom-input" />
+            <img :src="captchaBase64Image" @click="refreshCaptcha" :alt="$t('register.captcha')" class="captcha-img">
           </div>
         </el-form-item>
       </el-form>
 
       <div class="action-buttons">
         <el-button type="primary" class="register-btn" @click="register">
-          注册
+          {{ $t('register.submit') }}
         </el-button>
 
         <div class="divider">
-          <span>已有账号?</span>
+          <span>{{ $t('register.hasAccount') }}</span>
         </div>
 
         <el-button type="info" class="login-btn" @click="router.push('/login')">
-          返回登录
+          {{ $t('register.backLogin') }}
         </el-button>
       </div>
     </div>
@@ -60,10 +63,15 @@
 </template>
 
 <script setup>
-import { reactive, ref, onMounted } from 'vue'
+import { reactive, ref, onMounted, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { loginApi } from '@/api/login-api'
+import { systemSettingApi } from '@/api/system-setting-api'
 import { ElMessage, ElNotification } from 'element-plus'
 import { router } from '@/router/index.js'
+import LanguageSwitcher from '@/components/language-switcher.vue'
+
+const { t } = useI18n()
 
 const formData = reactive({
   username: '',
@@ -74,50 +82,60 @@ const formData = reactive({
   captchaOwner: ''
 })
 
-const rules = {
+const rules = computed(() => ({
   username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' },
-    { min: 3, max: 20, message: '用户名长度在 3 到 20 个字符', trigger: 'blur' },
+    { required: true, message: t('login.usernameRequired'), trigger: 'blur' },
+    { min: 3, max: 20, message: t('login.usernameLength'), trigger: 'blur' },
     {
       pattern: /^[a-zA-Z0-9_]+$/,
-      message: '用户名只能包含英文字母、数字和下划线',
+      message: t('login.usernamePattern'),
       trigger: 'blur'
     }
   ],
   nickname: [
-    { required: true, message: '请输入昵称', trigger: 'blur' }
+    { required: true, message: t('register.nicknameRequired'), trigger: 'blur' }
   ],
   password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, max: 20, message: '密码长度在 6 到 20 个字符', trigger: 'blur' },
+    { required: true, message: t('login.passwordRequired'), trigger: 'blur' },
+    { min: 6, max: 20, message: t('login.passwordLength'), trigger: 'blur' },
     {
       pattern: /^[a-zA-Z0-9_]+$/,
-      message: '密码只能包含英文字母、数字和下划线',
+      message: t('login.passwordPattern'),
       trigger: 'blur'
     }
   ],
   newPassword: [
-    { required: true, message: '请输入确认密码', trigger: 'blur' },
-    { min: 6, max: 20, message: '密码长度在 6 到 20 个字符', trigger: 'blur' },
+    { required: true, message: t('register.confirmPasswordRequired'), trigger: 'blur' },
+    { min: 6, max: 20, message: t('login.passwordLength'), trigger: 'blur' },
     {
       pattern: /^[a-zA-Z0-9_.]+$/,
-      message: '密码只能包含英文字母、数字和下划线',
+      message: t('login.passwordPattern'),
       trigger: 'blur'
     }
   ],
   captchaCode: [
-    { required: true, message: '请输入验证码', trigger: 'blur' }
+    { required: true, message: t('login.captchaRequired'), trigger: 'blur' }
   ],
   phone: [
-    { required: true, message: '请输入电话号码', trigger: 'blur' }
+    { required: true, message: t('register.phoneRequired'), trigger: 'blur' }
   ]
-}
+}))
 
 const captchaBase64Image = ref('')
 
 const formRef = ref()
 
-onMounted(() => {
+onMounted(async () => {
+  try {
+    const res = await systemSettingApi.getPublic()
+    if (res?.data?.registerEnabled === false) {
+      ElMessage.warning(t('register.closed'))
+      router.replace('/login')
+      return
+    }
+  } catch (e) {
+    console.error(e)
+  }
   refreshCaptcha()
 })
 
@@ -140,7 +158,7 @@ async function register() {
         const res = await loginApi.register(formData)
         if (res.code === 0) {
           console.log(res.data)
-          ElMessage.success('注册成功')
+          ElMessage.success(t('register.success'))
           router.push('/login')
         } else {
           ElMessage.error(res.msg)
@@ -164,6 +182,13 @@ async function register() {
     linear-gradient(135deg, #0f172a 0%, #1d4ed8 52%, #0ea5e9 100%);
   position: relative;
   overflow: hidden;
+}
+
+.register-lang {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  z-index: 10;
 }
 
 .waves {

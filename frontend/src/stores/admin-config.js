@@ -1,4 +1,5 @@
 import {defineStore} from 'pinia'
+import {applyLanguage} from '@/i18n/index.js'
 
 export const defaultConfig = {
   language: 'zh-cn',// 'en' : 'zh-cn'
@@ -19,6 +20,7 @@ export const useAdminConfigStore = defineStore('ModConfig', {
       for (const k in defaultConfig) {
         this[k] = defaultConfig[k]
       }
+      applyLanguage(defaultConfig.language)
     }
   },
   persist: {

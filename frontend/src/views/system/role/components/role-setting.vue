@@ -2,8 +2,8 @@
   <el-card class="role-setting">
     <template #header>
       <div class="header">
-        设置该角色对应的后台管理权限
-        <el-button style="float: right" v-if="activeRoleId" type="primary" @click="saveChange" :disabled="!hasPerm('system:role:upd')">保存</el-button>
+        {{ $t('role.settingTitle') }}
+        <el-button style="float: right" v-if="activeRoleId" type="primary" @click="saveChange" :disabled="!hasPerm('system:role:upd')">{{ $t('common.save') }}</el-button>
       </div>
     </template>
     <div class="role-container">
@@ -18,6 +18,7 @@
 
 <script setup>
 import {inject, ref, watch} from 'vue';
+import {useI18n} from 'vue-i18n';
 
 import _ from 'lodash';
 import {useMenuSettingStore} from "@/stores/menu-setting.js";
@@ -26,6 +27,7 @@ import {usemodLoadingStore} from "@/stores/mod-loading.js";
 import RecursiveTree from "@/views/system/role/components/recursive-tree.vue";
 import {hasPerm} from "@/utils/permission.js";
 
+const { t } = useI18n()
 
 let menuSettingStore = useMenuSettingStore();
 let tree = ref();
@@ -49,7 +51,7 @@ async function getRoleSelectedMenu() {
 async function saveChange() {
   let checkedData = menuSettingStore.checkedData;
   if (_.isEmpty(checkedData)) {
-    ElMessage.error('还未选择任何权限');
+    ElMessage.error(t('common.noPerm'));
     return;
   }
   let params = {
@@ -59,7 +61,7 @@ async function saveChange() {
   usemodLoadingStore().show();
   try {
     await roleMenuApi.updateRoleTree(params);
-    ElMessage.success('保存成功');
+    ElMessage.success(t('common.saveSuccess'));
   } catch (error) {
     console.log(error)
   } finally {

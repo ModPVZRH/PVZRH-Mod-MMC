@@ -1,19 +1,19 @@
 <template>
   <div class="mod-icon-upload">
     <div class="icon-preview" @click="pickFile">
-      <img v-if="modelValue" :src="modelValue" class="icon-img" alt="模组图标" />
+      <img v-if="modelValue" :src="modelValue" class="icon-img" :alt="$t('iconUpload.alt')" />
       <div v-else class="icon-placeholder">
         <el-icon :size="28"><Plus /></el-icon>
-        <span>上传图标</span>
+        <span>{{ $t('iconUpload.upload') }}</span>
       </div>
     </div>
     <div class="icon-actions">
       <el-button size="small" type="primary" @click="pickFile">
-        {{ modelValue ? '更换' : '上传' }}
+        {{ modelValue ? $t('iconUpload.change') : $t('common.upload') }}
       </el-button>
-      <el-button size="small" :disabled="!modelValue" @click="openCropForCurrent">裁剪</el-button>
-      <el-button size="small" type="danger" plain :disabled="!modelValue" @click="clearIcon">删除</el-button>
-      <span class="icon-tip">支持 jpg/png/webp，自动压缩到 100KB 以内，1:1 裁剪</span>
+      <el-button size="small" :disabled="!modelValue" @click="openCropForCurrent">{{ $t('iconUpload.crop') }}</el-button>
+      <el-button size="small" type="danger" plain :disabled="!modelValue" @click="clearIcon">{{ $t('common.delete') }}</el-button>
+      <span class="icon-tip">{{ $t('iconUpload.tip') }}</span>
     </div>
     <input
       ref="fileInputRef"
@@ -25,7 +25,7 @@
 
     <el-dialog
       v-model="cropVisible"
-      title="裁剪模组图标"
+      :title="$t('iconUpload.cropTitle')"
       width="560px"
       append-to-body
       :z-index="5000"
@@ -52,8 +52,8 @@
         />
       </div>
       <template #footer>
-        <el-button @click="cropVisible = false">取消</el-button>
-        <el-button type="primary" :loading="uploading" @click="confirmCrop">确认并上传</el-button>
+        <el-button @click="cropVisible = false">{{ $t('common.cancel') }}</el-button>
+        <el-button type="primary" :loading="uploading" @click="confirmCrop">{{ $t('iconUpload.confirmUpload') }}</el-button>
       </template>
     </el-dialog>
   </div>
@@ -61,12 +61,15 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { VueCropper } from 'vue-cropper'
 import 'vue-cropper/dist/index.css'
 import { fileApi } from '@/api/file-api.js'
 import { compressImageToMaxSize, urlToObjectUrl, MAX_ICON_BYTES } from '@/utils/image.js'
+
+const { t } = useI18n()
 
 const props = defineProps({
   modelValue: { type: String, default: '' },
@@ -91,11 +94,11 @@ function onFileChange(event) {
   event.target.value = ''
   if (!file) return
   if (!file.type.startsWith('image/')) {
-    ElMessage.error('请选择图片文件')
+    ElMessage.error(t('iconUpload.selectImage'))
     return
   }
   if (file.size / 1024 / 1024 > 10) {
-    ElMessage.error('图片大小不能超过 10MB')
+    ElMessage.error(t('iconUpload.tooLarge'))
     return
   }
   openCrop(URL.createObjectURL(file))
@@ -133,12 +136,12 @@ function onCropClosed() {
 function getCropBlob() {
   return new Promise((resolve, reject) => {
     if (!cropperRef.value) {
-      reject(new Error('裁剪器未就绪'))
+      reject(new Error(t('iconUpload.cropperNotReady')))
       return
     }
     cropperRef.value.getCropBlob((data) => {
       if (!data) {
-        reject(new Error('裁剪失败'))
+        reject(new Error(t('iconUpload.cropFailed')))
         return
       }
       resolve(data)
@@ -161,12 +164,12 @@ async function confirmCrop() {
     if (res.data?.fileUrl) {
       emit('update:modelValue', res.data.fileUrl)
       cropVisible.value = false
-      ElMessage.success(`图标已上传（${Math.ceil(compressed.size / 1024)}KB）`)
+      ElMessage.success(t('iconUpload.uploaded', { size: Math.ceil(compressed.size / 1024) }))
     } else {
-      ElMessage.error(res.msg || '上传失败')
+      ElMessage.error(res.msg || t('iconUpload.uploadFailed'))
     }
   } catch (err) {
-    ElMessage.error(err.message || '上传失败')
+    ElMessage.error(err.message || t('iconUpload.uploadFailed'))
   } finally {
     uploading.value = false
   }

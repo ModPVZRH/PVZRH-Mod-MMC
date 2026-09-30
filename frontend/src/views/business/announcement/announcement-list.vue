@@ -5,7 +5,7 @@
       <div class="query-operation">
         <div class="sort-query">
           <div class="query-item">
-            <div class="query-placeholder">排序字段:</div>
+            <div class="query-placeholder">{{ $t('common.sortField') }}:</div>
             <div class="query-input">
               <el-select
                   v-model="selectedSortItems"
@@ -13,7 +13,7 @@
                   collapse-tags
                   collapse-tags-tooltip
                   :max-collapse-tags="4"
-                  placeholder="排序字段"
+                  :placeholder="$t('common.sortField')"
                   value-key="label"
                   @change="sortItemChange"
                   style="min-width: 260px; max-width: 600px;"
@@ -36,8 +36,8 @@
                 >
                   <span style="float: left">{{ item.desc }}</span>
                   <span style="float: right;color: var(--el-text-color-secondary);font-size: 13px;">
-                  <span v-if="item.isAsc">升序</span>
-                  <span v-else>降序</span>
+                  <span v-if="item.isAsc">{{ $t('common.asc') }}</span>
+                  <span v-else>{{ $t('common.desc') }}</span>
                 </span>
                 </el-option>
               </el-select>
@@ -51,13 +51,13 @@
             <el-icon>
               <search/>
             </el-icon>
-            查询
+            {{ $t('common.query') }}
           </el-button>
           <el-button @click="resetQuery">
             <el-icon>
               <refresh/>
             </el-icon>
-            重置
+            {{ $t('common.reset') }}
           </el-button>
         </div>
       </div>
@@ -71,14 +71,14 @@
           <el-icon>
             <plus />
           </el-icon>
-          新增
+          {{ $t('common.add') }}
         </el-button>
         <el-button @click="confirmBatchDelete" type="danger" plain
                    :disabled="selectedRowKeyList.length === 0">
           <el-icon>
             <Delete />
           </el-icon>
-          批量删除
+          {{ $t('common.batchDelete') }}
         </el-button>
       </div>
 
@@ -91,21 +91,21 @@
             style="width: 100%"
         >
           <el-table-column type="selection" width="42" />
-          <el-table-column prop="id" label="ID" min-width="80" align="center"/>
-          <el-table-column prop="title" label="公告标题" min-width="120" align="center"/>
-          <el-table-column prop="isPublished" label="是否发布" min-width="120" align="center">
+          <el-table-column prop="id" :label="$t('common.id')" min-width="80" align="center"/>
+          <el-table-column prop="title" :label="$t('announcement.title')" min-width="120" align="center"/>
+          <el-table-column prop="isPublished" :label="$t('announcement.isPublished')" min-width="120" align="center">
             <template #default="scope">
-              <el-tag :type="scope.row.isPublished ? 'success' : 'danger'">{{ scope.row.isPublished ? '是' : '否' }}</el-tag>
+              <el-tag :type="scope.row.isPublished ? 'success' : 'danger'">{{ scope.row.isPublished ? $t('common.yes') : $t('common.no') }}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="createdTime" label="创建时间" min-width="120" align="center"/>
-          <el-table-column fixed="right" label="操作" width="120" align="center">
+          <el-table-column prop="createdTime" :label="$t('common.createTime')" min-width="120" align="center"/>
+          <el-table-column fixed="right" :label="$t('common.operation')" width="120" align="center">
             <template #default="scope">
               <el-button link type="primary" @click="showForm(scope.row)">
-                编辑
+                {{ $t('common.edit') }}
               </el-button>
               <el-button link type="danger" @click="onDelete(scope.row)">
-                删除
+                {{ $t('common.delete') }}
               </el-button>
             </template>
           </el-table-column>
@@ -132,11 +132,14 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue'
+import { ref, reactive, onMounted, watch, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { announcementApi } from '@/api/announcement-api'
 import AnnouncementForm from './announcement-form.vue'
 import { Delete, Plus, Refresh, Search } from '@element-plus/icons-vue'
 import {hasPerm} from "@/utils/permission.js";
+
+const { t } = useI18n()
 
 // 查询数据表单和方法
 const queryFormState = {
@@ -194,19 +197,19 @@ async function onDelete(row) {
   if (row) {
     await handleDelete([row.id])
   } else {
-    ElMessage.warning('请至少选择一条数据')
+    ElMessage.warning(t('common.selectAtLeastOne'))
   }
 }
 
 async function handleDelete(id) {
   try {
-    await ElMessageBox.confirm('确定要删除吗？', '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
+    await ElMessageBox.confirm(t('common.confirmDelete'), t('common.tip'), {
+      confirmButtonText: t('common.confirm'),
+      cancelButtonText: t('common.cancel'),
       type: 'warning'
     })
     await announcementApi.delete(id)
-    ElMessage.success('删除成功')
+    ElMessage.success(t('common.deleteSuccess'))
     queryData()
   } catch (e) {
   }
@@ -215,11 +218,11 @@ async function handleDelete(id) {
 // 批量删除
 function confirmBatchDelete() {
   ElMessageBox.confirm(
-      '确定要批量删除这些数据吗?',
-      '提示',
+      t('common.confirmBatchDelete'),
+      t('common.tip'),
       {
-        confirmButtonText: '删除',
-        cancelButtonText: '取消',
+        confirmButtonText: t('common.delete'),
+        cancelButtonText: t('common.cancel'),
         type: 'warning'
       }
   )
@@ -234,10 +237,10 @@ function confirmBatchDelete() {
 async function requestBatchDelete() {
   try {
     await announcementApi.batchDelete(selectedRowKeyList.value)
-    ElMessage.success('删除成功')
+    ElMessage.success(t('common.deleteSuccess'))
     queryData()
   } catch (e) {
-    ElMessage.error('删除失败')
+    ElMessage.error(t('common.deleteFailed'))
   }
 }
 
@@ -249,35 +252,30 @@ function showForm(row) {
 }
 
 // 排序字段
-const sortItemOptions = ref([
-  { label: 'ID降序', desc: 'ID', isAsc: false, column: 'id', disabled: false },
-  { label: 'ID升序', desc: 'ID', isAsc: true, column: 'id', disabled: false },
-  { label: '公告标题降序', desc: '公告标题', isAsc: false, column: 'title', disabled: false },
-  { label: '公告标题升序', desc: '公告标题', isAsc: true, column: 'title', disabled: false },
-  { label: '是否发布降序', desc: '是否发布', isAsc: false, column: 'isPublished', disabled: false },
-  { label: '是否发布升序', desc: '是否发布', isAsc: true, column: 'isPublished', disabled: false },
-  { label: '创建时间降序', desc: '创建时间', isAsc: false, column: 'createdTime', disabled: false },
-  { label: '创建时间升序', desc: '创建时间', isAsc: true, column: 'createdTime', disabled: false },
-  { label: '更新时间降序', desc: '更新时间', isAsc: false, column: 'updatedTime', disabled: false },
-  { label: '更新时间升序', desc: '更新时间', isAsc: true, column: 'updatedTime', disabled: false },
-])
-
 const selectedSortItems = ref([])
-
-function sortItemChange(selected) {
-  sortItemOptions.value.forEach(option => {
-    option.disabled = false
-  })
+const sortItemOptions = computed(() => {
   const selectedColumns = new Map()
-  selected.forEach(item => {
+  selectedSortItems.value.forEach(item => {
     selectedColumns.set(item.column, item.isAsc)
   })
-  sortItemOptions.value.forEach(option => {
-    if (selectedColumns.has(option.column)) {
-      option.disabled = selectedColumns.get(option.column) !== option.isAsc
-    }
-  })
-}
+  return [
+    { label: t('sort.descLabel', { field: t('common.id') }), desc: t('common.id'), isAsc: false, column: 'id' },
+    { label: t('sort.ascLabel', { field: t('common.id') }), desc: t('common.id'), isAsc: true, column: 'id' },
+    { label: t('sort.descLabel', { field: t('announcement.title') }), desc: t('announcement.title'), isAsc: false, column: 'title' },
+    { label: t('sort.ascLabel', { field: t('announcement.title') }), desc: t('announcement.title'), isAsc: true, column: 'title' },
+    { label: t('sort.descLabel', { field: t('announcement.isPublished') }), desc: t('announcement.isPublished'), isAsc: false, column: 'isPublished' },
+    { label: t('sort.ascLabel', { field: t('announcement.isPublished') }), desc: t('announcement.isPublished'), isAsc: true, column: 'isPublished' },
+    { label: t('sort.descLabel', { field: t('common.createTime') }), desc: t('common.createTime'), isAsc: false, column: 'createdTime' },
+    { label: t('sort.ascLabel', { field: t('common.createTime') }), desc: t('common.createTime'), isAsc: true, column: 'createdTime' },
+    { label: t('sort.descLabel', { field: t('common.updateTime') }), desc: t('common.updateTime'), isAsc: false, column: 'updatedTime' },
+    { label: t('sort.ascLabel', { field: t('common.updateTime') }), desc: t('common.updateTime'), isAsc: true, column: 'updatedTime' },
+  ].map(option => ({
+    ...option,
+    disabled: selectedColumns.has(option.column) && selectedColumns.get(option.column) !== option.isAsc
+  }))
+})
+
+function sortItemChange() {}
 
 function handleTagClose(tag) {
   selectedSortItems.value.splice(selectedSortItems.value.indexOf(tag), 1)

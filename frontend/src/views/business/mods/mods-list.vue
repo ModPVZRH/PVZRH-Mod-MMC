@@ -5,7 +5,7 @@
       <div class="query-operation">
         <div class="sort-query">
           <div class="query-item">
-            <div class="query-placeholder">排序字段:</div>
+            <div class="query-placeholder">{{ $t('common.sortField') }}:</div>
             <div class="query-input">
               <el-select
                   v-model="selectedSortItems"
@@ -13,7 +13,7 @@
                   collapse-tags
                   collapse-tags-tooltip
                   :max-collapse-tags="4"
-                  placeholder="排序字段"
+                  :placeholder="$t('common.sortField')"
                   value-key="column"
                   @change="sortItemChange"
                   style="min-width: 260px; max-width: 600px;"
@@ -51,23 +51,23 @@
         </div>
        <div class="search-query">
           <div class="query-item">
-            <div class="query-placeholder">Mod名称:</div>
+            <div class="query-placeholder">{{ $t('mods.name') }}:</div>
             <div class="query-input">
-              <el-input v-model="queryForm.modName" placeholder="Mod名称"/>
+              <el-input v-model="queryForm.modName" :placeholder="$t('mods.name')"/>
             </div>
           </div>
           <div class="query-item">
-            <div class="query-placeholder">分类:</div>
+            <div class="query-placeholder">{{ $t('mods.category') }}:</div>
             <div class="query-input">
-              <el-select v-model="queryForm.categoryId" clearable placeholder="全部分类" style="width: 160px">
+              <el-select v-model="queryForm.categoryId" clearable :placeholder="$t('mods.allCategories')" style="width: 160px">
                 <el-option v-for="item in categoryList" :key="item.id" :label="item.name" :value="item.id" />
               </el-select>
             </div>
           </div>
           <div class="query-item">
-            <div class="query-placeholder">标签:</div>
+            <div class="query-placeholder">{{ $t('mods.tags') }}:</div>
             <div class="query-input">
-              <el-select v-model="queryForm.tagId" clearable placeholder="全部标签" style="width: 160px">
+              <el-select v-model="queryForm.tagId" clearable :placeholder="$t('mods.allTags')" style="width: 160px">
                 <el-option v-for="item in tagList" :key="item.id" :label="item.name" :value="item.id" />
               </el-select>
             </div>
@@ -78,13 +78,13 @@
             <el-icon>
               <search/>
             </el-icon>
-            查询
+            {{ $t('common.query') }}
           </el-button>
           <el-button @click="resetQuery">
             <el-icon>
               <refresh/>
             </el-icon>
-            重置
+            {{ $t('common.reset') }}
           </el-button>
         </div>
       </div>
@@ -98,14 +98,14 @@
           <el-icon>
             <plus />
           </el-icon>
-          新增
+          {{ $t('common.add') }}
         </el-button>
         <el-button @click="confirmBatchDelete" type="danger" plain
                    :disabled="selectedRowKeyList.length === 0" v-if="hasPerm('business:mods:del')">
           <el-icon>
             <Delete />
           </el-icon>
-          批量删除
+          {{ $t('common.batchDelete') }}
         </el-button>
       </div>
 
@@ -118,8 +118,8 @@
             style="width: 100%"
         >
           <el-table-column type="selection" width="42" />
-          <el-table-column prop="id" label="ID" min-width="50" align="center" />
-          <el-table-column label="图标" width="80" align="center">
+          <el-table-column prop="id" :label="$t('common.id')" min-width="50" align="center" />
+          <el-table-column :label="$t('mods.icon')" width="80" align="center">
             <template #default="scope">
               <el-image
                 v-if="scope.row.iconUrl"
@@ -129,16 +129,16 @@
                 fit="cover"
                 style="width: 48px; height: 48px; border-radius: 8px"
               />
-              <span v-else style="color: var(--el-text-color-placeholder)">无</span>
+              <span v-else style="color: var(--el-text-color-placeholder)">{{ $t('common.none') }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="modName" label="Mod名称" min-width="120" align="center" show-overflow-tooltip/>
-          <el-table-column prop="categoryName" label="分类" min-width="100" align="center">
+          <el-table-column prop="modName" :label="$t('mods.name')" min-width="120" align="center" show-overflow-tooltip/>
+          <el-table-column prop="categoryName" :label="$t('mods.category')" min-width="100" align="center">
             <template #default="scope">
-              {{ scope.row.categoryName || '-' }}
+              {{ scope.row.categoryName || $t('common.empty') }}
             </template>
           </el-table-column>
-          <el-table-column label="标签" min-width="180" align="center">
+          <el-table-column :label="$t('mods.tags')" min-width="180" align="center">
             <template #default="scope">
               <div v-if="scope.row.tags && scope.row.tags.length" class="mod-tag-cell">
                 <el-tag
@@ -152,10 +152,10 @@
                   {{ tag.name }}
                 </el-tag>
               </div>
-              <span v-else style="color: var(--el-text-color-placeholder)">-</span>
+              <span v-else style="color: var(--el-text-color-placeholder)">{{ $t('common.empty') }}</span>
             </template>
           </el-table-column>
-          <el-table-column prop="modDescription" label="Mod介绍" min-width="200" align="left">
+          <el-table-column prop="modDescription" :label="$t('mods.description')" min-width="200" align="left">
             <template #default="scope">
               <el-tooltip
                 :content="getDescriptionTooltip(scope.row.modDescription)"
@@ -164,53 +164,83 @@
                 :show-after="300"
               >
                 <div class="mod-desc-cell">
-                  {{ getDescriptionPreview(scope.row.modDescription) || '暂无介绍' }}
+                  {{ getDescriptionPreview(scope.row.modDescription) || $t('mods.noDescription') }}
                 </div>
               </el-tooltip>
             </template>
           </el-table-column>
-          <el-table-column prop="isVisible" label="是否发布" min-width="120" align="center">
+          <el-table-column prop="isVisible" :label="$t('mods.isVisible')" min-width="120" align="center">
             <template #default="scope">
-              <el-tag :type="scope.row.isVisible ? 'success' : 'danger'">{{ scope.row.isVisible ? '是' : '否' }}</el-tag>
+              <el-tag :type="scope.row.isVisible ? 'success' : 'danger'">{{ scope.row.isVisible ? $t('common.yes') : $t('common.no') }}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="isModpack" label="是否整合包" min-width="120" align="center">
+          <el-table-column prop="isModpack" :label="$t('mods.isModpack')" min-width="120" align="center">
             <template #default="scope">
-              <el-tag :type="scope.row.isModpack ? 'success' : 'info'">{{ scope.row.isModpack ? '是' : '否' }}</el-tag>
+              <el-tag :type="scope.row.isModpack ? 'success' : 'info'">{{ scope.row.isModpack ? $t('common.yes') : $t('common.no') }}</el-tag>
             </template>
           </el-table-column>
 
-          <el-table-column prop="supportedVersions" label="支持版本" min-width="120" align="center"/>
-          <el-table-column prop="frameworkName" label="Mod框架" min-width="120" align="center">
+          <el-table-column prop="supportedVersions" :label="$t('mods.supportedVersions')" min-width="120" align="center"/>
+          <el-table-column prop="frameworkName" :label="$t('mods.framework')" min-width="120" align="center">
             <template #default="scope">
               {{ getFrameworkNameOptionsLabel(scope.row.frameworkName) }}
             </template>
           </el-table-column>
-          <el-table-column prop="downloadCloudUrl" label="网盘下载地址" min-width="300" align="center">
+          <el-table-column prop="downloadCloudUrl" :label="$t('mods.cloudUrlFull')" min-width="300" align="center">
             <template #default="scope">
               <el-link :href="scope.row.downloadCloudUrl" target="_blank" type="primary">
                 {{ scope.row.downloadCloudUrl }}
               </el-link>
             </template>
           </el-table-column>
-                    <el-table-column prop="downloadDirectUrl" label="直链下载地址" min-width="300" align="center">
+                    <el-table-column prop="downloadDirectUrl" :label="$t('mods.directUrlFull')" min-width="300" align="center">
             <template #default="scope">
               <el-link :href="scope.row.downloadDirectUrl" target="_blank" type="primary">
                 {{ scope.row.downloadDirectUrl }}
               </el-link>
             </template>
           </el-table-column>
-          <el-table-column prop="version" label="Mod版本" min-width="100" align="center"/>
-          <el-table-column prop="downloadCount" label="下载次数" min-width="100" align="center"/>
-          <el-table-column prop="viewCount" label="浏览次数" min-width="100" align="center"/>
-          <el-table-column prop="createdAt" label="创建时间" min-width="200" align="center"/>
-          <el-table-column fixed="right" label="操作" width="120" align="center">
+          <el-table-column prop="version" :label="$t('mods.version')" min-width="100" align="center"/>
+          <el-table-column :label="$t('mods.versionList')" min-width="120" align="center">
+            <template #default="scope">
+              <el-popover
+                v-if="scope.row.versions && scope.row.versions.length"
+                placement="left"
+                :width="360"
+                trigger="click"
+              >
+                <div class="version-popover">
+                  <div v-for="item in scope.row.versions" :key="item.id || item.version" class="version-popover-item">
+                    <div class="version-popover-title">
+                      v{{ item.version }}
+                      <el-tag v-if="item.current" size="small" type="success">{{ $t('mods.currentVersion') }}</el-tag>
+                    </div>
+                    <div class="version-popover-desc">{{ item.description || $t('mods.noDescription') }}</div>
+                    <el-link v-if="item.downloadDirectUrl" :href="item.downloadDirectUrl" target="_blank" type="primary">
+                      {{ $t('mods.directUrl') }}
+                    </el-link>
+                    <el-link v-if="item.downloadCloudUrl" :href="item.downloadCloudUrl" target="_blank" type="primary">
+                      {{ $t('mods.cloudUrl') }}
+                    </el-link>
+                  </div>
+                </div>
+                <template #reference>
+                  <el-button link type="primary">{{ scope.row.versions.length }}</el-button>
+                </template>
+              </el-popover>
+              <span v-else style="color: var(--el-text-color-placeholder)">{{ $t('common.empty') }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="downloadCount" :label="$t('mods.downloadCount')" min-width="100" align="center"/>
+          <el-table-column prop="viewCount" :label="$t('mods.viewCount')" min-width="100" align="center"/>
+          <el-table-column prop="createdAt" :label="$t('common.createTime')" min-width="200" align="center"/>
+          <el-table-column fixed="right" :label="$t('common.operation')" width="120" align="center">
             <template #default="scope">
               <el-button link type="primary" @click="showForm(scope.row)" v-if="hasPerm('business:mods:upd')">
-                编辑
+                {{ $t('common.edit') }}
               </el-button>
               <el-button link type="danger" @click="onDelete(scope.row)" v-if="hasPerm('business:mods:del')">
-                删除
+                {{ $t('common.delete') }}
               </el-button>
             </template>
           </el-table-column>
@@ -237,13 +267,15 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue'
+import { ref, reactive, onMounted, watch, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { modsApi } from '@/api/mods-api'
 import { categoryApi } from '@/api/category-api'
 import { tagApi } from '@/api/tag-api'
 import ModsForm from './mods-form.vue'
 import {Delete, Plus, Refresh, Search, ArrowUp, ArrowDown} from '@element-plus/icons-vue'
 import {hasPerm} from "@/utils/permission.js";
+const { t } = useI18n()
 // ------------------------ 导入列表 ------------------------
 // --------------------------------------------------------
 // ------------------------ 枚举量 ------------------------
@@ -345,19 +377,19 @@ async function onDelete(row) {
   if (row) {
     await handleDelete([row.id])
   } else {
-    ElMessage.warning('请至少选择一条数据')
+    ElMessage.warning(t('common.selectAtLeastOne'))
   }
 }
 
 async function handleDelete(id) {
   try {
-    await ElMessageBox.confirm('确定要删除吗？', '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
+    await ElMessageBox.confirm(t('common.confirmDelete'), t('common.tip'), {
+      confirmButtonText: t('common.confirm'),
+      cancelButtonText: t('common.cancel'),
       type: 'warning'
     })
     await modsApi.delete(id)
-    ElMessage.success('删除成功')
+    ElMessage.success(t('common.deleteSuccess'))
     queryData()
   } catch (e) {
   }
@@ -366,11 +398,11 @@ async function handleDelete(id) {
 // 批量删除
 function confirmBatchDelete() {
   ElMessageBox.confirm(
-      '确定要批量删除这些数据吗?',
-      '提示',
+      t('common.confirmBatchDelete'),
+      t('common.tip'),
       {
-        confirmButtonText: '删除',
-        cancelButtonText: '取消',
+        confirmButtonText: t('common.delete'),
+        cancelButtonText: t('common.cancel'),
         type: 'warning'
       }
   )
@@ -386,10 +418,10 @@ function confirmBatchDelete() {
 async function requestBatchDelete() {
   try {
     await modsApi.batchDelete(selectedRowKeyList.value)
-    ElMessage.success('删除成功')
+    ElMessage.success(t('common.deleteSuccess'))
     queryData()
   } catch (e) {
-    ElMessage.error('删除失败')
+    ElMessage.error(t('common.deleteFailed'))
   }
 }
 
@@ -400,28 +432,28 @@ function showForm(row) {
   formRef.value.show(row)
 }
 // -------------------------- 排序字段 -------------------------
-const sortItemOptions = ref([
-  {label: 'ID', column: 'id', isAsc: false},
-  {label: 'Mod名称', column: 'mod_name', isAsc: false},
-  {label: 'Mod英文名', column: 'english_name', isAsc: false},
-  {label: '作者ID', column: 'author_id', isAsc: false},
-  {label: 'Mod介绍', column: 'mod_description', isAsc: false},
-  {label: '模组图标', column: 'icon_url', isAsc: false},
-  {label: '支持游戏', column: 'game_name', isAsc: false},
-  {label: '支持版本', column: 'supported_versions', isAsc: false},
-  {label: 'Mod框架', column: 'framework_name', isAsc: false},
-  {label: '直链下载地址', column: 'download_direct_url', isAsc: false},
-  {label: '网盘下载地址', column: 'download_cloud_url', isAsc: false},
-  {label: 'Mod版本', column: 'version', isAsc: false},
-  {label: '文件大小', column: 'file_size', isAsc: false},
-  {label: '下载次数', column: 'download_count', isAsc: false},
-  {label: '查看次数', column: 'view_count', isAsc: false},
-  {label: '是否通过审核', column: 'is_approved', isAsc: false},
-  {label: '是否推荐', column: 'is_featured', isAsc: false},
-  {label: '是否可见', column: 'is_visible', isAsc: false},
-  {label: '是否整合包', column: 'is_modpack', isAsc: false},
-  {label: '创建时间', column: 'created_at', isAsc: false},
-  {label: '修改时间', column: 'updated_at', isAsc: false},
+const sortItemOptions = computed(() => [
+  {label: t('common.id'), column: 'id', isAsc: false},
+  {label: t('mods.name'), column: 'mod_name', isAsc: false},
+  {label: t('mods.englishName'), column: 'english_name', isAsc: false},
+  {label: t('mods.authorId'), column: 'author_id', isAsc: false},
+  {label: t('mods.description'), column: 'mod_description', isAsc: false},
+  {label: t('mods.icon'), column: 'icon_url', isAsc: false},
+  {label: t('mods.gameName'), column: 'game_name', isAsc: false},
+  {label: t('mods.supportedVersions'), column: 'supported_versions', isAsc: false},
+  {label: t('mods.framework'), column: 'framework_name', isAsc: false},
+  {label: t('mods.directUrlFull'), column: 'download_direct_url', isAsc: false},
+  {label: t('mods.cloudUrlFull'), column: 'download_cloud_url', isAsc: false},
+  {label: t('mods.version'), column: 'version', isAsc: false},
+  {label: t('mods.fileSize'), column: 'file_size', isAsc: false},
+  {label: t('mods.downloadCount'), column: 'download_count', isAsc: false},
+  {label: t('mods.viewCountSort'), column: 'view_count', isAsc: false},
+  {label: t('mods.isApproved'), column: 'is_approved', isAsc: false},
+  {label: t('mods.isFeatured'), column: 'is_featured', isAsc: false},
+  {label: t('mods.isVisibleSort'), column: 'is_visible', isAsc: false},
+  {label: t('mods.isModpack'), column: 'is_modpack', isAsc: false},
+  {label: t('common.createTime'), column: 'created_at', isAsc: false},
+  {label: t('common.updateTime'), column: 'updated_at', isAsc: false},
 ])
 
 const selectedSortItems = ref([])
@@ -454,6 +486,32 @@ watch(selectedSortItems, (newSelectedSortItems, oldSelectedSortItems) => {
 }, {deep: true})
 // --------------------------------------------------------
 </script>
+<style lang="scss">
+.version-popover-item + .version-popover-item {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--el-border-color-lighter);
+}
+
+.version-popover-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.version-popover-desc {
+  margin-bottom: 6px;
+  color: var(--el-text-color-secondary);
+  line-height: 1.4;
+  white-space: pre-wrap;
+}
+
+.version-popover-item .el-link + .el-link {
+  margin-left: 12px;
+}
+</style>
 <style scoped lang="scss">
 .mod-tag-cell {
   display: flex;

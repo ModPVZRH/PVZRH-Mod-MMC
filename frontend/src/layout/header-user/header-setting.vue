@@ -1,7 +1,13 @@
 <template>
-  <el-drawer title="网站设置" direction="rtl" v-model="visible" @close="close">
+  <el-drawer :title="t('setting.title')" direction="rtl" v-model="visible" @close="close">
     <el-form label-position="left" label-width="80px">
-      <el-form-item label="主题颜色">
+      <el-form-item :label="t('layout.language')">
+        <el-select v-model="configStore.language" @change="applyLanguage">
+          <el-option :label="t('layout.chinese')" value="zh-cn"/>
+          <el-option :label="t('layout.english')" value="en"/>
+        </el-select>
+      </el-form-item>
+      <el-form-item :label="t('setting.themeColor')">
         <div class="color-container">
           <template v-for="(item, index) in themeColors" :key="index">
             <div v-if="item.primaryColor === useAdminConfigStore().themeColor" class="color">
@@ -26,31 +32,36 @@
           </template>
         </div>
       </el-form-item>
-      <el-form-item label="菜单宽度">
+      <el-form-item :label="t('setting.menuWidth')">
         <el-input v-model="useAdminConfigStore().sideMenuWidth"/>
       </el-form-item>
-      <el-form-item label="面包屑">
-        <el-switch v-model="useAdminConfigStore().breadCrumbShow" active-text="显示" inactive-text="隐藏"/>
+      <el-form-item :label="t('setting.breadcrumb')">
+        <el-switch v-model="useAdminConfigStore().breadCrumbShow" :active-text="t('common.show')" :inactive-text="t('common.hide')"/>
       </el-form-item>
-      <el-form-item label="标签页">
-        <el-switch v-model="useAdminConfigStore().pageTabShow" active-text="显示" inactive-text="隐藏"/>
+      <el-form-item :label="t('setting.pageTab')">
+        <el-switch v-model="useAdminConfigStore().pageTabShow" :active-text="t('common.show')" :inactive-text="t('common.hide')"/>
       </el-form-item>
-      <el-form-item label="页脚">
-        <el-switch v-model="useAdminConfigStore().footerShow" active-text="显示" inactive-text="隐藏"/>
+      <el-form-item :label="t('setting.footer')">
+        <el-switch v-model="useAdminConfigStore().footerShow" :active-text="t('common.show')" :inactive-text="t('common.hide')"/>
       </el-form-item>
       <br/>
       <br/>
     </el-form>
 
     <div class="footer">
-      <el-button type="danger" block @click="useAdminConfigStore().reset()">恢复默认配置</el-button>
+      <el-button type="danger" block @click="useAdminConfigStore().reset()">{{ t('setting.reset') }}</el-button>
     </div>
   </el-drawer>
 </template>
 
 <script setup>
-import {ref, reactive, computed} from 'vue'
+import {ref} from 'vue'
+import {useI18n} from 'vue-i18n'
 import {themeColors, useAdminConfigStore} from "@/stores/admin-config.js";
+import {applyLanguage} from '@/i18n/index.js'
+
+const {t} = useI18n()
+const configStore = useAdminConfigStore()
 // ----------------- 显示与隐藏 -----------------
 const visible = ref(false)
 defineExpose({

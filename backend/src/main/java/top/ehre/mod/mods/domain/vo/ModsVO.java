@@ -86,6 +86,9 @@ public class ModsVO {
     @ApiModelProperty("Mod版本")
     private String version;
 
+    @ApiModelProperty("版本列表")
+    private List<ModVersionVO> versions;
+
     @ApiModelProperty("文件大小(")
     private Long fileSize;
 

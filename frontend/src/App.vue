@@ -3,7 +3,7 @@
     <div
          class="app-shell"
          v-loading="loading"
-         element-loading-text="加载中..."
+         :element-loading-text="t('app.loading')"
          :element-loading-spinner="svg"
          element-loading-svg-view-box="-10, -10, 50, 50">
       <RouterView/>
@@ -12,13 +12,17 @@
 </template>
 <script setup>
 import {computed, watch} from 'vue'
+import {useI18n} from 'vue-i18n'
 import {usemodLoadingStore} from "@/stores/mod-loading.js";
 import {useAdminConfigStore} from "@/stores/admin-config.js";
 import {en, zhCn} from "element-plus/es/locale/index";
+import {applyLanguage} from '@/i18n/index.js'
 
-const locale = computed(() => (useAdminConfigStore().language === 'zh-cn' ? zhCn : en))
+const {t} = useI18n()
+const configStore = useAdminConfigStore()
+const locale = computed(() => (configStore.language === 'zh-cn' ? zhCn : en))
 const loading = computed(() => usemodLoadingStore().loading)
-const themeColor = computed(() => useAdminConfigStore().themeColor)
+const themeColor = computed(() => configStore.themeColor)
 const svg = `
         <path class="path" d="
           M 30 15
@@ -31,6 +35,9 @@ const svg = `
 // 监听 themeColor 的变化并更新 CSS 变量
 watch(themeColor, () => {
   document.documentElement.style.setProperty('--el-color-primary', themeColor.value);
+}, {immediate: true});
+watch(() => configStore.language, (lang) => {
+  applyLanguage(lang)
 }, {immediate: true});
 </script>
 <style lang="scss">

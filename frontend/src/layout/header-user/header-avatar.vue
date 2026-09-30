@@ -13,10 +13,10 @@
     <template #dropdown>
       <el-dropdown-menu class="avatar-menu">
         <el-dropdown-item @click="toAccount">
-          <span>个人中心</span>
+          <span>{{ t('layout.account') }}</span>
         </el-dropdown-item>
         <el-dropdown-item @click="onLogout">
-          <span>退出登录</span>
+          <span>{{ t('layout.logout') }}</span>
         </el-dropdown-item>
       </el-dropdown-menu>
     </template>
@@ -24,11 +24,14 @@
 </template>
 <script setup>
 import {computed} from 'vue'
+import {useI18n} from 'vue-i18n'
 import {loginApi} from "@/api/login-api.js";
 import {useUserStore} from "@/stores/user.js";
 import {useMenuStore} from "@/stores/menu.js";
 import {useRouter} from "vue-router";
 import UserAvatar from "@/components/user-avatar.vue";
+
+const {t} = useI18n()
 
 const userStore = useUserStore()
 const username = computed(() => userStore.username)
@@ -39,7 +42,7 @@ async function onLogout() {
   try {
     let res = await loginApi.logout()
     if(res.code === 0){
-      ElMessage.success('退出登录成功')
+      ElMessage.success(t('layout.logoutSuccess'))
     }
   } catch (e) {
     console.log(e)

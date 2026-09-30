@@ -1,5 +1,6 @@
 import axios from 'axios';
 import {localRead, localRemove} from "@/utils/local-util.js";
+import {tGlobal} from '@/i18n/index.js';
 
 const TOKEN_HEADER = 'token';
 // 创建axios对象
@@ -52,11 +53,11 @@ cengxuyuanAxios.interceptors.response.use(
     },
     (error) => {
       if (error.message.indexOf('timeout') !== -1) {
-        ElMessage.error('网络超时');
+        ElMessage.error(tGlobal('network.timeout'));
       } else if (error.message === 'Network Error') {
-        ElMessage.error('网络连接错误');
+        ElMessage.error(tGlobal('network.error'));
       } else if (error.message.indexOf('Request') !== -1) {
-        ElMessage.error('网络发生错误');
+        ElMessage.error(tGlobal('network.requestError'));
       }
       return Promise.reject(error);
     }

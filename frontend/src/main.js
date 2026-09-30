@@ -10,6 +10,7 @@ import {useMenuStore} from "@/stores/menu.js";
 import {ElMessage} from "element-plus";
 import {localRead} from "@/utils/local-util.js";
 import {loginApi} from "@/api/login-api.js";
+import i18n from '@/i18n/index.js'
 import '@/styles/common.scss'
 import '@/styles/theme.scss'
 
@@ -47,6 +48,7 @@ function init() {
   const pinia = createPinia()
   pinia.use(piniaPluginPersistedstate)
   app.use(pinia)
+  app.use(i18n)
   app.use(router)
   app.mount('#app')
 }

@@ -22,6 +22,27 @@
             updated_at = updated_at
         WHERE id = #{id}
     </update>
+    <update id="refreshModForNewVersion">
+        UPDATE mods
+        SET version = #{version},
+            download_direct_url = #{downloadDirectUrl},
+            download_cloud_url = #{downloadCloudUrl},
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+    <update id="syncCurrentVersion">
+        UPDATE mods
+        SET version = #{version},
+            download_direct_url = #{downloadDirectUrl},
+            download_cloud_url = #{downloadCloudUrl},
+            updated_at = updated_at
+        WHERE id = #{id}
+    </update>
+    <update id="touchUpdatedAt">
+        UPDATE mods
+        SET updated_at = NOW()
+        WHERE id = #{id}
+    </update>
     <insert id="addModTag">
         INSERT INTO mods_tag (mod_id, tag_id) VALUES (#{id}, #{tagId})
     </insert>

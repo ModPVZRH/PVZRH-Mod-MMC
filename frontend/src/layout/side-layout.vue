@@ -16,7 +16,7 @@
                 <fold/>
               </el-icon>
             </span>
-            <el-tooltip content="首页" placement="bottom">
+            <el-tooltip :content="t('layout.home')" placement="bottom">
               <span class="home-button" @click="goHome">
                 <el-icon>
                   <home-filled/>
@@ -44,7 +44,7 @@
       </el-main>
 
       <el-footer class="mod-layout-footer" v-show="footerShow">
-        <div>Copyright © 2025-2026 模组管理系统</div>
+        <div>{{ t('app.copyright') }}</div>
       </el-footer>
     </el-container>
   </el-container>
@@ -52,6 +52,7 @@
 
 <script setup>
 import {computed, ref} from 'vue'
+import {useI18n} from 'vue-i18n'
 import {useAdminConfigStore} from "@/stores/admin-config.js";
 import SideMenu from "@/layout/side-menu/side-menu.vue";
 import {useRoute, useRouter} from "vue-router";
@@ -60,7 +61,7 @@ import PageTab from "@/layout/page-tab/page-tab.vue";
 import Breadcrumb from "@/layout/breadcrumb/breadcrumb.vue";
 import HeaderUser from "@/layout/header-user/header-user.vue";
 
-
+const {t} = useI18n()
 const collapse = ref(false)
 
 

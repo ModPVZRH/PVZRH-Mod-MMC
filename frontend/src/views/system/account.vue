@@ -1,28 +1,28 @@
 <template>
   <el-card class="account-card" shadow="never">
     <template #header>
-      <div class="account-header">个人中心</div>
+      <div class="account-header">{{ $t('account.title') }}</div>
     </template>
     <div class="account-content">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
-        <el-form-item label="用户ID" prop="userId">
-          <el-input v-model="form.userId" placeholder="用户ID" disabled/>
+        <el-form-item :label="$t('account.userId')" prop="userId">
+          <el-input v-model="form.userId" :placeholder="$t('account.userId')" disabled/>
         </el-form-item>
-        <el-form-item label="用户名" prop="username">
-          <el-input v-model="form.username" placeholder="用户名" disabled/>
+        <el-form-item :label="$t('account.username')" prop="username">
+          <el-input v-model="form.username" :placeholder="$t('account.username')" disabled/>
         </el-form-item>
-        <el-form-item label="昵称" prop="nickname">
-          <el-input v-model="form.nickname" placeholder="昵称"/>
+        <el-form-item :label="$t('account.nickname')" prop="nickname">
+          <el-input v-model="form.nickname" :placeholder="$t('account.nickname')"/>
         </el-form-item>
-        <el-form-item label="新密码" prop="password">
-          <el-input v-model="form.newPassword" placeholder="新密码"/>
+        <el-form-item :label="$t('account.newPassword')" prop="password">
+          <el-input v-model="form.newPassword" :placeholder="$t('account.newPassword')"/>
         </el-form-item>
-        <el-form-item label="性别" prop="gender">
-          <el-select v-model="form.gender" clearable placeholder="性别">
+        <el-form-item :label="$t('account.gender')" prop="gender">
+          <el-select v-model="form.gender" clearable :placeholder="$t('account.gender')">
             <el-option v-for="item in genderOptions" :key="item.value" :label="item.label" :value="item.value"/>
           </el-select>
         </el-form-item>
-        <el-form-item label="头像" prop="avatar">
+        <el-form-item :label="$t('account.avatar')" prop="avatar">
           <el-upload
               action="#"
               :show-file-list="false"
@@ -46,7 +46,7 @@
       </el-form>
 
       <div>
-        <el-button type="primary" @click="onSubmit">更新</el-button>
+        <el-button type="primary" @click="onSubmit">{{ $t('account.update') }}</el-button>
       </div>
     </div>
 
@@ -55,7 +55,8 @@
 
 <script setup>
 
-import {reactive, ref, nextTick} from 'vue'
+import {reactive, ref, nextTick, computed} from 'vue'
+import {useI18n} from 'vue-i18n'
 import _ from 'lodash'
 import {ElMessage} from 'element-plus'
 import {userApi} from '@/api/user-api'
@@ -63,11 +64,13 @@ import {useUserStore} from '@/stores/user.js'
 import {fileApi} from "@/api/file-api.js";
 import UserAvatar from "@/components/user-avatar.vue";
 
-const genderOptions = [
-  {label: '未知', value: 0},
-  {label: '男', value: 1},
-  {label: '女', value: 2}
-]
+const {t} = useI18n()
+
+const genderOptions = computed(() => [
+  {label: t('gender.unknown'), value: 0},
+  {label: t('gender.male'), value: 1},
+  {label: t('gender.female'), value: 2}
+])
 
 async function doAvatarUpload(options) {
   let file = options.file
@@ -85,10 +88,10 @@ async function doAvatarUpload(options) {
 function beforeAvatarUpload(rawFile) {
   if (rawFile.type !== 'image/jpeg' &&
       rawFile.type !== 'image/png') {
-    ElMessage.error('文件格式错误: 不支持' + rawFile.type)
+    ElMessage.error(t('validate.unsupportedFileType', {type: rawFile.type}))
     return false
   } else if (rawFile.size / 1024 / 1024 > 10) {
-    ElMessage.error('文件大小不能超过10MB!')
+    ElMessage.error(t('validate.fileTooLarge'))
     return false
   }
   return true
@@ -112,28 +115,28 @@ const formDefault = {
 
 let form = reactive({...formDefault})
 
-const rules = {
+const rules = computed(() => ({
   username: [{
     required: true,
-    message: '用户名 必填',
+    message: t('common.required', {field: t('account.username')}),
     trigger: 'blur'
   }],
   phone: [{
     required: true,
-    message: '手机号码 必填',
+    message: t('account.phoneRequired'),
     trigger: 'blur'
   }],
   gender: [{
     required: true,
-    message: '性别，0未知，1男，2女 必填',
+    message: t('account.genderRequired'),
     trigger: 'blur'
   }],
   avatar: [{
     required: true,
-    message: '头像 必填',
+    message: t('account.avatarRequired'),
     trigger: 'blur'
   }],
-}
+}))
 
 // 点击确定，验证表单
 async function onSubmit() {
@@ -141,7 +144,7 @@ async function onSubmit() {
     await formRef.value.validate()
     save()
   } catch (err) {
-    ElMessage.error('参数验证错误，请仔细填写表单数据!')
+    ElMessage.error(t('common.validateError'))
   }
 }
 
@@ -149,7 +152,7 @@ async function onSubmit() {
 async function save() {
   try {
     await userApi.update(form)
-    ElMessage.success('操作成功')
+    ElMessage.success(t('common.success'))
   } catch (err) {
     console.log(err)
   }

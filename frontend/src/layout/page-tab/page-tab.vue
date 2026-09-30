@@ -7,12 +7,12 @@
                @tab-remove="removeTab"
                @tab-click="selectTab"
       >
-        <el-tab-pane label="首页" :name="'-2'" :closable="false"
+        <el-tab-pane :label="t('common.home')" :name="'-2'" :closable="false"
         ></el-tab-pane>
         <el-tab-pane v-for="item in tabNav" :name="item.menuId" :closable="true">
           <template #label>
                 <span v-if="item.name !== HOME_PAGE">
-                {{ item.title }}
+                {{ translateMenuName(item.title) }}
                 </span>
           </template>
         </el-tab-pane>
@@ -25,8 +25,8 @@
         </el-icon>
         <template #dropdown>
           <el-dropdown-menu>
-            <el-dropdown-item @click="closeByMenu(false)">关闭其他</el-dropdown-item>
-            <el-dropdown-item @click="closeByMenu(true)">关闭所有</el-dropdown-item>
+            <el-dropdown-item @click="closeByMenu(false)">{{ t('layout.closeOthers') }}</el-dropdown-item>
+            <el-dropdown-item @click="closeByMenu(true)">{{ t('layout.closeAll') }}</el-dropdown-item>
           </el-dropdown-menu>
         </template>
       </el-dropdown>
@@ -36,9 +36,13 @@
 
 <script setup>
 import {computed, ref, watch} from 'vue'
+import {useI18n} from 'vue-i18n'
 import {useRoute, useRouter} from 'vue-router'
 import {HOME_PAGE} from '@/constants/index.js'
 import {useMenuStore} from "@/stores/menu.js";
+import {translateMenuName} from '@/i18n/menu.js'
+
+const {t} = useI18n()
 
 const router = useRouter()
 const route = useRoute()

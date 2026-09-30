@@ -8,9 +8,12 @@ import org.springframework.web.bind.annotation.*;
 import top.ehre.mod.mods.service.ModsService;
 
 import top.ehre.mod.mods.domain.vo.ModsVO;
+import top.ehre.mod.mods.domain.vo.ModVersionVO;
 import top.ehre.mod.mods.domain.dto.ModsPageDTO;
 import top.ehre.mod.mods.domain.dto.ModsAddDTO;
 import top.ehre.mod.mods.domain.dto.ModsUpdateDTO;
+import top.ehre.mod.mods.domain.dto.ModVersionAddDTO;
+import top.ehre.mod.mods.domain.dto.ModVersionUpdateDTO;
 
 import top.ehre.mod.util.PageResult;
 import top.ehre.mod.util.Result;
@@ -70,6 +73,34 @@ public class ModsController {
     public Result get(@PathVariable("id") String id) {
         ModsVO modsVO = modsService.get(id);
         return Result.success(modsVO);
+    }
+
+    @GetMapping("/{modId}/versions")
+    @PreAuthorize("hasAuthority('business:mods:get')")
+    public Result listVersions(@PathVariable("modId") String modId) {
+        List<ModVersionVO> versions = modsService.listVersions(modId);
+        return Result.success(versions);
+    }
+
+    @PostMapping("/{modId}/versions")
+    @PreAuthorize("hasAuthority('business:mods:upd')")
+    public Result addVersion(@PathVariable("modId") String modId, @RequestBody ModVersionAddDTO modVersionAddDTO) {
+        ModVersionVO version = modsService.addVersion(modId, modVersionAddDTO);
+        return Result.success(version);
+    }
+
+    @PutMapping("/version/update")
+    @PreAuthorize("hasAuthority('business:mods:upd')")
+    public Result updateVersion(@RequestBody ModVersionUpdateDTO modVersionUpdateDTO) {
+        boolean updated = modsService.updateVersion(modVersionUpdateDTO);
+        return Result.info(updated, null);
+    }
+
+    @DeleteMapping("/version/{id}")
+    @PreAuthorize("hasAuthority('business:mods:upd')")
+    public Result deleteVersion(@PathVariable("id") String id) {
+        boolean deleted = modsService.deleteVersion(id);
+        return Result.info(deleted, null);
     }
 
 }

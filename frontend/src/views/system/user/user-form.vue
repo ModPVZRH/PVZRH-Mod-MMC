@@ -1,27 +1,27 @@
 <template>
   <div class="drawer-form">
     <el-drawer
-        :title="addFlag ? '添加' : '编辑'"
+        :title="addFlag ? $t('common.addTitle') : $t('common.editTitle')"
         :size="500"
         v-model="visibleFlag"
         :before-close="onClose"
     >
       <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
-        <el-form-item label="用户名" prop="username">
-          <el-input v-model="form.username" placeholder="用户名"/>
+        <el-form-item :label="$t('user.username')" prop="username">
+          <el-input v-model="form.username" :placeholder="$t('user.username')"/>
         </el-form-item>
-        <el-form-item label="昵称" prop="nickname" >
-          <el-input v-model="form.nickname" placeholder="昵称"/>
+        <el-form-item :label="$t('user.nickname')" prop="nickname" >
+          <el-input v-model="form.nickname" :placeholder="$t('user.nickname')"/>
         </el-form-item>
-        <el-form-item label="密码" prop="password" >
-          <el-input v-model="form.password" placeholder="密码"/>
+        <el-form-item :label="$t('user.password')" prop="password" >
+          <el-input v-model="form.password" :placeholder="$t('user.password')"/>
         </el-form-item>
-        <el-form-item label="性别" prop="gender" >
-          <el-select v-model="form.gender" clearable placeholder="性别">
+        <el-form-item :label="$t('user.gender')" prop="gender" >
+          <el-select v-model="form.gender" clearable :placeholder="$t('user.gender')">
             <el-option v-for="(option, index) in genderOptions" :key="index" :label="option.label" :value="option.value"/>
           </el-select>
         </el-form-item>
-        <el-form-item label="头像" prop="avatar" >
+        <el-form-item :label="$t('user.avatar')" prop="avatar" >
           <el-upload
               action="#"
               :show-file-list="false"
@@ -42,26 +42,26 @@
             </el-icon>
           </el-upload>
         </el-form-item>
-        <el-form-item label="创建时间" prop="createTime"  v-if="false">
+        <el-form-item :label="$t('common.createTime')" prop="createTime"  v-if="false">
           <el-date-picker v-model="form.createTime" type="datetime"
-                          placeholder="创建时间"
+                          :placeholder="$t('common.createTime')"
                           format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss"/>
         </el-form-item>
-        <el-form-item label="更新时间" prop="updateTime"  v-if="false">
+        <el-form-item :label="$t('common.updateTime')" prop="updateTime"  v-if="false">
           <el-date-picker v-model="form.updateTime" type="datetime"
-                          placeholder="更新时间"
+                          :placeholder="$t('common.updateTime')"
                           format="YYYY-MM-DD HH:mm:ss" value-format="YYYY-MM-DD HH:mm:ss"/>
         </el-form-item>
-        <el-form-item label="创建用户" prop="createUser"  v-if="false">
-          <el-input v-model="form.createUser" placeholder="创建用户"/>
+        <el-form-item :label="$t('common.createUser')" prop="createUser"  v-if="false">
+          <el-input v-model="form.createUser" :placeholder="$t('common.createUser')"/>
         </el-form-item>
-        <el-form-item label="更新用户" prop="updateUser"  v-if="false">
-          <el-input v-model="form.updateUser" placeholder="更新用户"/>
+        <el-form-item :label="$t('common.updateUser')" prop="updateUser"  v-if="false">
+          <el-input v-model="form.updateUser" :placeholder="$t('common.updateUser')"/>
         </el-form-item>
-        <el-form-item label="角色列表">
+        <el-form-item :label="$t('user.roleList')">
           <span>
-            <el-button type="primary" plain @click="form.roleVOFlag = true"><el-icon><Plus /></el-icon>选择</el-button>
-            <el-tag type="info" round style="margin-left: 5px" v-if="form.roleVOList">已选{{ form.roleVOList ? form.roleVOList.length : 0 }}</el-tag>
+            <el-button type="primary" plain @click="form.roleVOFlag = true"><el-icon><Plus /></el-icon>{{ $t('common.select') }}</el-button>
+            <el-tag type="info" round style="margin-left: 5px" v-if="form.roleVOList">{{ $t('common.selectedCount', { count: form.roleVOList ? form.roleVOList.length : 0 }) }}</el-tag>
           </span>
           <el-dialog
               v-model="form.roleVOFlag"
@@ -72,10 +72,10 @@
               :show-close="false"
           >
             <template #header>
-              <span>角色列表</span>
+              <span>{{ $t('user.roleList') }}</span>
               <span style="float: right;">
-              <el-button type="primary" @click="saveRoleVO">保存</el-button>
-              <el-button @click="form.roleVOFlag = false">关闭</el-button>
+              <el-button type="primary" @click="saveRoleVO">{{ $t('common.save') }}</el-button>
+              <el-button @click="form.roleVOFlag = false">{{ $t('common.close') }}</el-button>
               </span>
             </template>
             <RoleVoList v-if="form.roleVOFlag"
@@ -88,19 +88,21 @@
 
       <template #footer>
         <div class="drawer-footer">
-          <el-button @click="onClose">取消</el-button>
-          <el-button type="primary" @click="onSubmit">保存</el-button>
+          <el-button @click="onClose">{{ $t('common.cancel') }}</el-button>
+          <el-button type="primary" @click="onSubmit">{{ $t('common.save') }}</el-button>
         </div>
       </template>
     </el-drawer>
   </div>
 </template>
 <script setup>
-  import {reactive, ref, nextTick} from 'vue';
+  import {reactive, ref, nextTick, computed} from 'vue';
+  import {useI18n} from 'vue-i18n';
   import _ from 'lodash';
   import {ElMessage} from 'element-plus';
   import {userApi} from '@/api/user-api';
   import UserAvatar from "@/components/user-avatar.vue";
+  const { t } = useI18n()
   // ------------------------ 联表查询VO ------------------------
   const queryFormState = {
     pageNum: 1,
@@ -114,15 +116,15 @@
   function saveRoleVO() {
     if (voRoleListRef.value) {
       form.roleVOList = voRoleListRef.value.getSelectedRowList()
-      ElMessage.success('保存成功')
+      ElMessage.success(t('common.saveSuccess'))
       form.roleVOFlag = false
     }
   }
   // ------------------------ 枚举量 ------------------------
-  const genderOptions = [
-    { label: '男', value: 1 },
-    { label: '女', value: 2 },
-  ]
+  const genderOptions = computed(() => [
+    { label: t('gender.male'), value: 1 },
+    { label: t('gender.female'), value: 2 },
+  ])
 
 
 
@@ -143,10 +145,10 @@
   function beforeAvatarUpload(rawFile) {
     if (rawFile.type !== 'image/jpeg' &&
         rawFile.type !== 'image/png') {
-      ElMessage.error('文件格式错误: 不支持' + rawFile.type)
+      ElMessage.error(t('validate.unsupportedFileType', { type: rawFile.type }))
       return false
     } else if (rawFile.size / 1024 / 1024 > 10) {
-      ElMessage.error('文件大小不能超过10MB!')
+      ElMessage.error(t('validate.fileTooLarge'))
       return false
     }
     return true
@@ -199,18 +201,18 @@
 
   let form = reactive({...formDefault});
 
-  const rules = {
+  const rules = computed(() => ({
     username: [{
       required: true,
-      message: '用户名 必填',
+      message: t('common.required', { field: t('user.username') }),
       trigger: 'blur'
     }],
     nickname: [{
       required: true,
-      message: '昵称 必填',
+      message: t('common.required', { field: t('user.nickname') }),
       trigger: 'blur'
     }],
-  };
+  }));
 
   // 点击确定，验证表单
   async function onSubmit() {
@@ -218,7 +220,7 @@
       await formRef.value.validate();
       save();
     } catch (err) {
-      ElMessage.error('参数验证错误，请仔细填写表单数据!');
+      ElMessage.error(t('common.validateError'));
     }
   }
 
@@ -230,7 +232,7 @@
       } else {
         await userApi.update(form);
       }
-      ElMessage.success('操作成功');
+      ElMessage.success(t('common.success'));
       emits('reloadList');
       onClose();
     } catch (err) {

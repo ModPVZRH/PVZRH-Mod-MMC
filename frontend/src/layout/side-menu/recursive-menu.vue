@@ -4,7 +4,7 @@
   >
     <template #title>
       <component v-if="menuItem.icon" :is="menuItem.icon" class="icon"/>
-      <span class="title">{{ menuItem.menuName }}</span>
+      <span class="title">{{ translateMenuName(menuItem.menuName, menuItem.uri) }}</span>
     </template>
     <recursive-menu
         v-for="child in menuItem.children"
@@ -15,12 +15,13 @@
   <el-menu-item v-else :index="menuItem.menuId" @click="turnToPage(menuItem)">
     <template #default>
       <component v-if="menuItem.icon" :is="menuItem.icon" class="icon"/>
-      <span>{{ menuItem.menuName }}</span>
+      <span>{{ translateMenuName(menuItem.menuName, menuItem.uri) }}</span>
     </template>
   </el-menu-item>
 </template>
 <script setup>
 import {router} from "@/router/index.js";
+import {translateMenuName} from '@/i18n/menu.js'
 
 const props = defineProps({
   menuItem: {

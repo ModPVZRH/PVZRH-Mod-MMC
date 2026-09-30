@@ -35,6 +35,18 @@ public interface ModsMapper extends BaseMapper<ModsEntity> {
 
     int incrementViewCount(@Param("id") String id);
 
+    int refreshModForNewVersion(@Param("id") String id,
+                                @Param("version") String version,
+                                @Param("downloadDirectUrl") String downloadDirectUrl,
+                                @Param("downloadCloudUrl") String downloadCloudUrl);
+
+    int syncCurrentVersion(@Param("id") String id,
+                           @Param("version") String version,
+                           @Param("downloadDirectUrl") String downloadDirectUrl,
+                           @Param("downloadCloudUrl") String downloadCloudUrl);
+
+    int touchUpdatedAt(@Param("id") String id);
+
     int addModTag(@Param("id") String modId, @Param("tagId") String tagId);
 
     int deleteModTags(@Param("id") String modId);
@@ -50,6 +62,9 @@ public interface ModsMapper extends BaseMapper<ModsEntity> {
                 FROM("mods");
                 LEFT_OUTER_JOIN("mod_category ON mods.category_id = mod_category.id");
                 if (pageDTO != null) {
+                    if (pageDTO.getScopeUserId() != null && !pageDTO.getScopeUserId().isBlank()) {
+                        WHERE("(mods.author_id = #{pageDTO.scopeUserId} OR mods.id IN (SELECT mod_id FROM mods_other_author WHERE author_id = #{pageDTO.scopeUserId}))");
+                    }
                     if (pageDTO.getAuthorId() != null && !pageDTO.getAuthorId().isBlank()){
                         WHERE("mods.author_id = #{pageDTO.authorId}");
                     }
